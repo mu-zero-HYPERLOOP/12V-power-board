@@ -1,9 +1,8 @@
 #pragma once
 
-#include "core_pins.h"
 #include "util/metrics.h"
-#include <Arduino.h>
 #include <cmath>
+#include <array>
 
 enum pdu12_channel {
   lp_2_23 = 0,

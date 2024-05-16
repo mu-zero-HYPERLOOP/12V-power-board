@@ -41,7 +41,7 @@ static inline pdu_channel_status pdu12_status_to_canzero_status(pdu12_channel_st
   }
 }
 
-void pdu_channel_control() {
+void channel_control() {
   // ====== LEVITATION BOARDS POWER CHANNEL ===========
   pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL,
                  canzero_get_levitation_boards_power_channel_ctrl() ==
