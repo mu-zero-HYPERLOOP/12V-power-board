@@ -5,6 +5,7 @@
 #include <cstring>
 #include <memory>
 #include <mutex>
+#include <optional>
 #include <thread>
 #include "canzero/canzero.h"
 #include "util/timestamp.h"

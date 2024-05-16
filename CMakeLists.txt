@@ -13,7 +13,9 @@ set(CMAKE_CXX_STANDARD 20)
 add_executable(${PROJECT_NAME} 
   mock/main.cpp
   mock/can.cpp
+  mock/pdu.cpp
   src/canzero/canzero.cpp
+  src/channel_control.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE src/)
