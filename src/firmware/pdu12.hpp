@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include "core_pins.h"
 #include "util/metrics.h"
@@ -6,20 +6,21 @@
 #include <cmath>
 
 enum pdu12_channel {
-  lp1 = 0,
-  lp2,
-  lp3,
-  lp4,
-  lp5,
-  lp6,
-  lp7,
-  lp8,
-  lp9,
-  lp10,
-  lp11,
-  lp12,
-  lp13,
-  lp14,
+  lp_2_23 = 0,
+  lp_3_22,
+  lp_4_21,
+  lp_5_20,
+  lp_6_19,
+  lp_7_18,
+  lp_8_17,
+  lp_9_16,
+  lp_10_15,
+  lp_11_14,
+  lp_12_41,
+  lp_24_40,
+  lp_25_39,
+  lp_26_38,
+  CHANNEL_COUNT,
 };
 
 enum pdu12_channel_status {
@@ -44,44 +45,45 @@ public:
 
   static Temperature read_mcu_temperature();
 
+  static bool any_short();
+
 private:
-  static constexpr size_t CHANNEL_COUNT = 14;
-  static constexpr int CHANNEL1_SENSE_PIN = 23;
-  static constexpr int CHANNEL1_CTRL_PIN = 2;
-  static constexpr int CHANNEL2_SENSE_PIN = 22;
-  static constexpr int CHANNEL2_CTRL_PIN = 3;
-  static constexpr int CHANNEL3_SENSE_PIN = 21;
-  static constexpr int CHANNEL3_CTRL_PIN = 4;
-  static constexpr int CHANNEL4_SENSE_PIN = 20;
-  static constexpr int CHANNEL4_CTRL_PIN = 5;
-  static constexpr int CHANNEL5_SENSE_PIN = 19;
-  static constexpr int CHANNEL5_CTRL_PIN = 6;
-  static constexpr int CHANNEL6_SENSE_PIN = 18;
-  static constexpr int CHANNEL6_CTRL_PIN = 7;
-  static constexpr int CHANNEL7_SENSE_PIN = 17;
-  static constexpr int CHANNEL7_CTRL_PIN = 8;
-  static constexpr int CHANNEL8_SENSE_PIN = 16;
-  static constexpr int CHANNEL8_CTRL_PIN = 9;
-  static constexpr int CHANNEL9_SENSE_PIN = 15;
-  static constexpr int CHANNEL9_CTRL_PIN = 10;
-  static constexpr int CHANNEL10_SENSE_PIN = 14;
-  static constexpr int CHANNEL10_CTRL_PIN = 11;
-  static constexpr int CHANNEL11_SENSE_PIN = 41;
-  static constexpr int CHANNEL11_CTRL_PIN = 12;
-  static constexpr int CHANNEL12_SENSE_PIN = 40;
-  static constexpr int CHANNEL12_CTRL_PIN = 24;
-  static constexpr int CHANNEL13_SENSE_PIN = 39;
-  static constexpr int CHANNEL13_CTRL_PIN = 25;
-  static constexpr int CHANNEL14_SENSE_PIN = 38;
-  static constexpr int CHANNEL14_CTRL_PIN = 26;
+  static constexpr int CHANNEL_2_23_SENSE_PIN = 23;
+  static constexpr int CHANNEL_2_23_CTRL_PIN = 2;
+  static constexpr int CHANNEL_3_22_SENSE_PIN = 22;
+  static constexpr int CHANNEL_3_22_CTRL_PIN = 3;
+  static constexpr int CHANNEL_4_21_SENSE_PIN = 21;
+  static constexpr int CHANNEL_4_21_CTRL_PIN = 4;
+  static constexpr int CHANNEL_5_20_SENSE_PIN = 20;
+  static constexpr int CHANNEL_5_20_CTRL_PIN = 5;
+  static constexpr int CHANNEL_6_19_SENSE_PIN = 19;
+  static constexpr int CHANNEL_6_19_CTRL_PIN = 6;
+  static constexpr int CHANNEL_7_18_SENSE_PIN = 18;
+  static constexpr int CHANNEL_7_18_CTRL_PIN = 7;
+  static constexpr int CHANNEL_8_17_SENSE_PIN = 17;
+  static constexpr int CHANNEL_8_17_CTRL_PIN = 8;
+  static constexpr int CHANNEL_9_16_SENSE_PIN = 16;
+  static constexpr int CHANNEL_6_16_CTRL_PIN = 9;
+  static constexpr int CHANNEL_10_15_SENSE_PIN = 15;
+  static constexpr int CHANNEL_10_15_CTRL_PIN = 10;
+  static constexpr int CHANNEL_11_14_SENSE_PIN = 14;
+  static constexpr int CHANNEL_11_14_CTRL_PIN = 11;
+  static constexpr int CHANNEL_12_41_SENSE_PIN = 41;
+  static constexpr int CHANNEL_12_41_CTRL_PIN = 12;
+  static constexpr int CHANNEL_24_40_SENSE_PIN = 40;
+  static constexpr int CHANNEL_24_40_CTRL_PIN = 24;
+  static constexpr int CHANNEL_25_39_SENSE_PIN = 39;
+  static constexpr int CHANNEL_25_39_CTRL_PIN = 25;
+  static constexpr int CHANNEL_26_38_SENSE_PIN = 38;
+  static constexpr int CHANNEL_26_38_CTRL_PIN = 26;
 
   static constexpr Resistance R_MEAS = 910_Ohm;
   static constexpr float K_ILIS = 1730.0f;
-  static constexpr Voltage SHORT_CIRCUIT_THRESH = 2.5_V;
+  static constexpr Current SHORT_CIRCUIT_THRESH = 5_A;
 
   static constexpr int SDC_CTRL_PIN = 32;
 
-  static Current m_currents[CHANNEL_COUNT];
-  static bool m_shorts[CHANNEL_COUNT];
-  static bool m_ctrl[CHANNEL_COUNT];
+  static std::array<Current, CHANNEL_COUNT> m_currents;
+  static std::array<bool, CHANNEL_COUNT> m_shorts;
+  static std::array<bool, CHANNEL_COUNT> m_ctrl;
 };

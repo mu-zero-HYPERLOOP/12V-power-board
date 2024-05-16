@@ -1,92 +1,230 @@
-#include <Arduino.h>
 #include "canzero.h"
+uint32_t min_u32(uint32_t v, uint32_t max) {
+    if (v > max) {
+        return max;
+    }
+    return v;
+}
+uint64_t min_u64(uint64_t v, uint64_t max) {
+    if (v > max) {
+        return max;
+    }
+    return v;
+}
+uint64_t __oe_config_hash;
+date_time __oe_build_time;
 pdu_state __oe_state;
-pdu_channel_control __oe_lp_channel1_control;
-pdu_channel_status __oe_lp_channel1_status;
-float __oe_lp_channel1_current;
-pdu_channel_control __oe_lp_channel2_control;
-pdu_channel_status __oe_lp_channel2_status;
-float __oe_lp_channel2_current;
-pdu_channel_control __oe_lp_channel3_control;
-pdu_channel_status __oe_lp_channel3_status;
-float __oe_lp_channel3_current;
-pdu_channel_control __oe_lp_channel4_control;
-pdu_channel_status __oe_lp_channel4_status;
-float __oe_lp_channel4_current;
-pdu_channel_control __oe_lp_channel5_control;
-pdu_channel_status __oe_lp_channel5_status;
-float __oe_lp_channel5_current;
-pdu_channel_control __oe_lp_channel6_control;
-pdu_channel_status __oe_lp_channel6_status;
-float __oe_lp_channel6_current;
-pdu_channel_control __oe_lp_channel7_control;
-pdu_channel_status __oe_lp_channel7_status;
-float __oe_lp_channel7_current;
-pdu_channel_control __oe_lp_channel8_control;
-pdu_channel_status __oe_lp_channel8_status;
-float __oe_lp_channel8_current;
-pdu_channel_control __oe_lp_channel9_control;
-pdu_channel_status __oe_lp_channel9_status;
-float __oe_lp_channel9_current;
-pdu_channel_control __oe_lp_channel10_control;
-pdu_channel_status __oe_lp_channel10_status;
-float __oe_lp_channel10_current;
-pdu_channel_control __oe_lp_channel11_control;
-pdu_channel_status __oe_lp_channel11_status;
-float __oe_lp_channel11_current;
-pdu_channel_control __oe_lp_channel12_control;
-pdu_channel_status __oe_lp_channel12_status;
-float __oe_lp_channel12_current;
-pdu_channel_control __oe_lp_channel13_control;
-pdu_channel_status __oe_lp_channel13_status;
-float __oe_lp_channel13_current;
-pdu_channel_control __oe_lp_channel14_control;
-pdu_channel_status __oe_lp_channel14_status;
-float __oe_lp_channel14_current;
-float __oe_total_current;
-float __oe_power_estimation;
 sdc_status __oe_sdc_status;
+error_flag __oe_assertion_fault;
+double __oe_loop_frequency;
+pdu_channel_control __oe_levitation_boards_power_channel_ctrl;
+float __oe_levitation_boards_power_channel_current;
+pdu_channel_status __oe_levitation_boards_power_channel_status;
+pdu_channel_control __oe_guidance_boards_power_channel_ctrl;
+float __oe_guidance_boards_power_channel_current;
+pdu_channel_status __oe_guidance_boards_power_channel_status;
+pdu_channel_control __oe_motor_driver_power_channel_ctrl;
+float __oe_motor_driver_power_channel_current;
+pdu_channel_status __oe_motor_driver_power_channel_status;
+pdu_channel_control __oe_input_board_power_channel_ctrl;
+float __oe_input_board_power_channel_current;
+pdu_channel_status __oe_input_board_power_channel_status;
+pdu_channel_control __oe_raspberry_pi_power_channel_ctrl;
+float __oe_raspberry_pi_power_channel_current;
+pdu_channel_status __oe_raspberry_pi_power_channel_status;
+pdu_channel_control __oe_antenna_power_channel_ctrl;
+float __oe_antenna_power_channel_current;
+float __oe_antenna_power_channel_status;
+pdu_channel_control __oe_led_board_power_channel_ctrl;
+float __oe_led_board_power_channel_current;
+pdu_channel_status __oe_led_board_power_channel_status;
 float __oe_mcu_temperature;
-error_flag __oe_error_mcu_over_temperature;
-error_flag __oe_warn_mcu_over_temperature;
+error_level __oe_error_level_mcu_temperature;
+error_level_config __oe_error_level_config_mcu_temperature;
+static void canzero_serialize_canzero_message_get_resp(canzero_message_get_resp* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0x9E;
+  frame->dlc = 8;
+  ((uint32_t*)data)[0] = (uint8_t)(msg->m_header.m_sof & (0xFF >> (8 - 1)));
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_eof & (0xFF >> (8 - 1))) << 1;
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_toggle & (0xFF >> (8 - 1))) << 2;
+  ((uint32_t*)data)[0] |= (uint16_t)(msg->m_header.m_od_index & (0xFFFF >> (16 - 13))) << 3;
+  ((uint32_t*)data)[0] |= msg->m_header.m_client_id << 16;
+  ((uint32_t*)data)[0] |= msg->m_header.m_server_id << 24;
+  ((uint32_t*)data)[1] = msg->m_data;
+}
+static void canzero_serialize_canzero_message_set_resp(canzero_message_set_resp* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0xBE;
+  frame->dlc = 4;
+  ((uint32_t*)data)[0] = (uint16_t)(msg->m_header.m_od_index & (0xFFFF >> (16 - 13)));
+  ((uint32_t*)data)[0] |= msg->m_header.m_client_id << 13;
+  ((uint32_t*)data)[0] |= msg->m_header.m_server_id << 21;
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_erno & (0xFF >> (8 - 1))) << 29;
+}
+static void canzero_serialize_canzero_message_power_board12_stream_state(canzero_message_power_board12_stream_state* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0x63;
+  frame->dlc = 1;
+  ((uint32_t*)data)[0] = (uint8_t)(msg->m_state & (0xFF >> (8 - 1)));
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_sdc_status & (0xFF >> (8 - 1))) << 1;
+}
+static void canzero_serialize_canzero_message_power_board12_stream_temperature(canzero_message_power_board12_stream_temperature* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0x6B;
+  frame->dlc = 1;
+  uint32_t mcu_temperature_0 = (msg->m_mcu_temperature - -1) / 0.592156862745098;
+  if (mcu_temperature_0 > 0xFF) {
+    mcu_temperature_0 = 0xFF;
+  }
+  ((uint32_t*)data)[0] = mcu_temperature_0;
+}
+static void canzero_serialize_canzero_message_power_board12_stream_errors(canzero_message_power_board12_stream_errors* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0x4B;
+  frame->dlc = 1;
+  ((uint32_t*)data)[0] = (uint8_t)(msg->m_assertion_fault & (0xFF >> (8 - 1)));
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_error_level_mcu_temperature & (0xFF >> (8 - 2))) << 1;
+}
+static void canzero_serialize_canzero_message_power_board12_stream_channel_status(canzero_message_power_board12_stream_channel_status* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0x6C;
+  frame->dlc = 4;
+  ((uint32_t*)data)[0] = (uint8_t)(msg->m_levitation_boards_power_channel_status & (0xFF >> (8 - 2)));
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_guidance_boards_power_channel_status & (0xFF >> (8 - 2))) << 2;
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_motor_driver_power_channel_status & (0xFF >> (8 - 2))) << 4;
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_input_board_power_channel_status & (0xFF >> (8 - 2))) << 6;
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_raspberry_pi_power_channel_status & (0xFF >> (8 - 2))) << 8;
+  uint32_t antenna_power_channel_status_10 = (msg->m_antenna_power_channel_status - 0) / 0.00007629510948348211;
+  if (antenna_power_channel_status_10 > 0xFFFF) {
+    antenna_power_channel_status_10 = 0xFFFF;
+  }
+  ((uint32_t*)data)[0] |= antenna_power_channel_status_10 << 10;
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_led_board_power_channel_status & (0xFF >> (8 - 2))) << 26;
+}
+static void canzero_serialize_canzero_message_power_board12_stream_channel_currents1(canzero_message_power_board12_stream_channel_currents1* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0x6D;
+  frame->dlc = 8;
+  uint32_t levitation_boards_power_channel_current_0 = (msg->m_levitation_boards_power_channel_current - 0) / 0.00007629510948348211;
+  if (levitation_boards_power_channel_current_0 > 0xFFFF) {
+    levitation_boards_power_channel_current_0 = 0xFFFF;
+  }
+  ((uint32_t*)data)[0] = levitation_boards_power_channel_current_0;
+  uint32_t guidance_boards_power_channel_current_16 = (msg->m_guidance_boards_power_channel_current - 0) / 0.00007629510948348211;
+  if (guidance_boards_power_channel_current_16 > 0xFFFF) {
+    guidance_boards_power_channel_current_16 = 0xFFFF;
+  }
+  ((uint32_t*)data)[0] |= guidance_boards_power_channel_current_16 << 16;
+  uint32_t motor_driver_power_channel_current_32 = (msg->m_motor_driver_power_channel_current - 0) / 0.00007629510948348211;
+  if (motor_driver_power_channel_current_32 > 0xFFFF) {
+    motor_driver_power_channel_current_32 = 0xFFFF;
+  }
+  ((uint32_t*)data)[1] = motor_driver_power_channel_current_32;
+  uint32_t input_board_power_channel_current_48 = (msg->m_input_board_power_channel_current - 0) / 0.00007629510948348211;
+  if (input_board_power_channel_current_48 > 0xFFFF) {
+    input_board_power_channel_current_48 = 0xFFFF;
+  }
+  ((uint32_t*)data)[1] |= input_board_power_channel_current_48 << 16;
+}
+static void canzero_serialize_canzero_message_power_board12_stream_channel_currents2(canzero_message_power_board12_stream_channel_currents2* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0x4C;
+  frame->dlc = 5;
+  uint32_t raspberry_pi_power_channel_current_0 = (msg->m_raspberry_pi_power_channel_current - 0) / 0.00007629510948348211;
+  if (raspberry_pi_power_channel_current_0 > 0xFFFF) {
+    raspberry_pi_power_channel_current_0 = 0xFFFF;
+  }
+  ((uint32_t*)data)[0] = raspberry_pi_power_channel_current_0;
+  uint32_t antenna_power_channel_current_16 = (msg->m_antenna_power_channel_current - 0) / 0.00007629510948348211;
+  if (antenna_power_channel_current_16 > 0xFFFF) {
+    antenna_power_channel_current_16 = 0xFFFF;
+  }
+  ((uint32_t*)data)[0] |= antenna_power_channel_current_16 << 16;
+  uint32_t led_board_power_channel_current_32 = (msg->m_led_board_power_channel_current - 0) / 0.0196078431372549;
+  if (led_board_power_channel_current_32 > 0xFF) {
+    led_board_power_channel_current_32 = 0xFF;
+  }
+  ((uint32_t*)data)[1] = led_board_power_channel_current_32;
+}
+static void canzero_serialize_canzero_message_heartbeat(canzero_message_heartbeat* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0xDF;
+  frame->dlc = 1;
+  ((uint32_t*)data)[0] = (uint8_t)(msg->m_node_id & (0xFF >> (8 - 4)));
+}
+static void canzero_deserialize_canzero_message_get_req(canzero_frame* frame, canzero_message_get_req* msg) {
+  uint8_t* data = frame->data;
+  msg->m_header.m_od_index = (((uint32_t*)data)[0] & (0xFFFFFFFF >> (32 - 13)));
+  msg->m_header.m_client_id = ((((uint32_t*)data)[0] >> 13) & (0xFFFFFFFF >> (32 - 8)));
+  msg->m_header.m_server_id = ((((uint32_t*)data)[0] >> 21) & (0xFFFFFFFF >> (32 - 8)));
+}
+static void canzero_deserialize_canzero_message_set_req(canzero_frame* frame, canzero_message_set_req* msg) {
+  uint8_t* data = frame->data;
+  msg->m_header.m_sof = (((uint32_t*)data)[0] & (0xFFFFFFFF >> (32 - 1)));
+  msg->m_header.m_eof = ((((uint32_t*)data)[0] >> 1) & (0xFFFFFFFF >> (32 - 1)));
+  msg->m_header.m_toggle = ((((uint32_t*)data)[0] >> 2) & (0xFFFFFFFF >> (32 - 1)));
+  msg->m_header.m_od_index = ((((uint32_t*)data)[0] >> 3) & (0xFFFFFFFF >> (32 - 13)));
+  msg->m_header.m_client_id = ((((uint32_t*)data)[0] >> 16) & (0xFFFFFFFF >> (32 - 8)));
+  msg->m_header.m_server_id = ((((uint32_t*)data)[0] >> 24) & (0xFFFFFFFF >> (32 - 8)));
+  msg->m_data = (((uint32_t*)data)[1] & (0xFFFFFFFF >> (32 - 32)));
+}
+static void canzero_deserialize_canzero_message_heartbeat(canzero_frame* frame, canzero_message_heartbeat* msg) {
+  uint8_t* data = frame->data;
+  msg->m_node_id = (node_id)(((uint32_t*)data)[0] & (0xFFFFFFFF >> (32 - 4)));
+}
+
+__attribute__((weak)) void canzero_wdg_timeout(uint8_t node_id) {}
 
 typedef enum {
   HEARTBEAT_JOB_TAG = 0,
-  GET_RESP_FRAGMENTATION_JOB_TAG = 1,
-  STREAM_INTERVAL_JOB_TAG = 2,
+  HEARTBEAT_WDG_JOB_TAG = 1,
+  GET_RESP_FRAGMENTATION_JOB_TAG = 2,
+  STREAM_INTERVAL_JOB_TAG = 3,
 } job_tag;
+
 typedef struct {
   uint32_t *buffer;
   uint8_t offset;
   uint8_t size;
   uint8_t od_index;
-  uint8_t server_id;
+  uint8_t client_id;
 } get_resp_fragmentation_job;
-typedef struct {
-  uint32_t command_resp_msg_id;
-  uint8_t bus_id;
-} command_resp_timeout_job;
+
 typedef struct {
   uint32_t last_schedule; 
   uint32_t stream_id;
 } stream_interval_job;
+
+#define MAX_DYN_HEARTBEATS 10
+typedef struct {
+  unsigned int static_wdg_armed[node_id_count];
+  unsigned int static_tick_counters[node_id_count];
+  unsigned int dynamic_wdg_armed[MAX_DYN_HEARTBEATS];
+  unsigned int dynamic_tick_counters[MAX_DYN_HEARTBEATS];
+} heartbeat_wdg_job_t;
+
 typedef struct {
   uint32_t climax;
   uint32_t position;
   job_tag tag;
   union {
     get_resp_fragmentation_job get_fragmentation_job;
-    stream_interval_job stream_interval_job;
+    stream_interval_job stream_job;
+    heartbeat_wdg_job_t wdg_job;
   } job;
 } job_t;
+
 union job_pool_allocator_entry {
   job_t job;
   union job_pool_allocator_entry *next;
 };
+
 typedef struct {
   union job_pool_allocator_entry job[64];
   union job_pool_allocator_entry *freelist;
 } job_pool_allocator;
+
 static job_pool_allocator job_allocator;
 static void job_pool_allocator_init() {
   for (uint8_t i = 1; i < 64; i++) {
@@ -95,6 +233,7 @@ static void job_pool_allocator_init() {
   job_allocator.job[64 - 1].next = NULL;
   job_allocator.freelist = job_allocator.job;
 }
+
 static job_t *job_pool_allocator_alloc() {
   if (job_allocator.freelist != NULL) {
     job_t *job = &job_allocator.freelist->job;
@@ -179,7 +318,7 @@ static void scheduler_unschedule() {
   scheduler_reschedule(scheduler.heap[0]->climax);
 }
 static const uint32_t get_resp_fragmentation_interval = 10;
-static void schedule_get_resp_fragmentation_job(uint32_t *fragmentation_buffer, uint8_t size, uint8_t od_index, uint8_t server_id) {
+static void schedule_get_resp_fragmentation_job(uint32_t *fragmentation_buffer, uint8_t size, uint8_t od_index, uint8_t client_id) {
   job_t *fragmentation_job = job_pool_allocator_alloc();
   fragmentation_job->climax = canzero_get_time() + get_resp_fragmentation_interval;
   fragmentation_job->tag = GET_RESP_FRAGMENTATION_JOB_TAG;
@@ -187,55 +326,63 @@ static void schedule_get_resp_fragmentation_job(uint32_t *fragmentation_buffer, 
   fragmentation_job->job.get_fragmentation_job.offset = 1;
   fragmentation_job->job.get_fragmentation_job.size = size;
   fragmentation_job->job.get_fragmentation_job.od_index = od_index;
-  fragmentation_job->job.get_fragmentation_job.server_id = server_id;
+  fragmentation_job->job.get_fragmentation_job.client_id = client_id;
   scheduler_schedule(fragmentation_job);
 }
+
 static job_t heartbeat_job;
 static const uint32_t heartbeat_interval = 100;
 static void schedule_heartbeat_job() {
-  heartbeat_job.climax = canzero_get_time() + heartbeat_interval;
+  heartbeat_job.climax = canzero_get_time();
   heartbeat_job.tag = HEARTBEAT_JOB_TAG;
   scheduler_schedule(&heartbeat_job);
 }
+
+static job_t heartbeat_wdg_job;
+static const uint32_t heartbeat_wdg_tick_duration = 50;
+static void schedule_heartbeat_wdg_job() {
+  heartbeat_wdg_job.climax = canzero_get_time() + 100;
+  heartbeat_wdg_job.tag = HEARTBEAT_WDG_JOB_TAG;
+  for (unsigned int i = 0; i < node_id_count; ++i) {
+    heartbeat_wdg_job.job.wdg_job.static_tick_counters[i] = 0;
+    heartbeat_wdg_job.job.wdg_job.static_wdg_armed[i] = 0;
+  }
+  for (unsigned int i = 0; i < MAX_DYN_HEARTBEATS; ++i) {
+    heartbeat_wdg_job.job.wdg_job.dynamic_tick_counters[i] = 0;
+    heartbeat_wdg_job.job.wdg_job.dynamic_wdg_armed[i] = 0;
+  }
+  scheduler_schedule(&heartbeat_wdg_job);
+}
+
 static job_t state_interval_job;
 static const uint32_t state_interval = 0;
 static void schedule_state_interval_job(){
   uint32_t time = canzero_get_time();
   state_interval_job.climax = time + state_interval;
   state_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  state_interval_job.job.stream_interval_job.stream_id = 0;
-  state_interval_job.job.stream_interval_job.last_schedule = time;
+  state_interval_job.job.stream_job.stream_id = 0;
+  state_interval_job.job.stream_job.last_schedule = time;
   scheduler_schedule(&state_interval_job);
 }
-static job_t channel_currents_1_interval_job;
-static const uint32_t channel_currents_1_interval = 250;
-static void schedule_channel_currents_1_interval_job(){
+static job_t temperature_interval_job;
+static const uint32_t temperature_interval = 500;
+static void schedule_temperature_interval_job(){
   uint32_t time = canzero_get_time();
-  channel_currents_1_interval_job.climax = time + channel_currents_1_interval;
-  channel_currents_1_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  channel_currents_1_interval_job.job.stream_interval_job.stream_id = 1;
-  channel_currents_1_interval_job.job.stream_interval_job.last_schedule = time;
-  scheduler_schedule(&channel_currents_1_interval_job);
+  temperature_interval_job.climax = time + temperature_interval;
+  temperature_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
+  temperature_interval_job.job.stream_job.stream_id = 1;
+  temperature_interval_job.job.stream_job.last_schedule = time;
+  scheduler_schedule(&temperature_interval_job);
 }
-static job_t channel_currents_2_interval_job;
-static const uint32_t channel_currents_2_interval = 250;
-static void schedule_channel_currents_2_interval_job(){
+static job_t errors_interval_job;
+static const uint32_t errors_interval = 0;
+static void schedule_errors_interval_job(){
   uint32_t time = canzero_get_time();
-  channel_currents_2_interval_job.climax = time + channel_currents_2_interval;
-  channel_currents_2_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  channel_currents_2_interval_job.job.stream_interval_job.stream_id = 2;
-  channel_currents_2_interval_job.job.stream_interval_job.last_schedule = time;
-  scheduler_schedule(&channel_currents_2_interval_job);
-}
-static job_t power_estimation_interval_job;
-static const uint32_t power_estimation_interval = 1000;
-static void schedule_power_estimation_interval_job(){
-  uint32_t time = canzero_get_time();
-  power_estimation_interval_job.climax = time + power_estimation_interval;
-  power_estimation_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  power_estimation_interval_job.job.stream_interval_job.stream_id = 3;
-  power_estimation_interval_job.job.stream_interval_job.last_schedule = time;
-  scheduler_schedule(&power_estimation_interval_job);
+  errors_interval_job.climax = time + errors_interval;
+  errors_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
+  errors_interval_job.job.stream_job.stream_id = 2;
+  errors_interval_job.job.stream_job.last_schedule = time;
+  scheduler_schedule(&errors_interval_job);
 }
 static job_t channel_status_interval_job;
 static const uint32_t channel_status_interval = 0;
@@ -243,9 +390,29 @@ static void schedule_channel_status_interval_job(){
   uint32_t time = canzero_get_time();
   channel_status_interval_job.climax = time + channel_status_interval;
   channel_status_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  channel_status_interval_job.job.stream_interval_job.stream_id = 4;
-  channel_status_interval_job.job.stream_interval_job.last_schedule = time;
+  channel_status_interval_job.job.stream_job.stream_id = 3;
+  channel_status_interval_job.job.stream_job.last_schedule = time;
   scheduler_schedule(&channel_status_interval_job);
+}
+static job_t channel_currents1_interval_job;
+static const uint32_t channel_currents1_interval = 100;
+static void schedule_channel_currents1_interval_job(){
+  uint32_t time = canzero_get_time();
+  channel_currents1_interval_job.climax = time + channel_currents1_interval;
+  channel_currents1_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
+  channel_currents1_interval_job.job.stream_job.stream_id = 4;
+  channel_currents1_interval_job.job.stream_job.last_schedule = time;
+  scheduler_schedule(&channel_currents1_interval_job);
+}
+static job_t channel_currents2_interval_job;
+static const uint32_t channel_currents2_interval = 100;
+static void schedule_channel_currents2_interval_job(){
+  uint32_t time = canzero_get_time();
+  channel_currents2_interval_job.climax = time + channel_currents2_interval;
+  channel_currents2_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
+  channel_currents2_interval_job.job.stream_job.stream_id = 5;
+  channel_currents2_interval_job.job.stream_job.last_schedule = time;
+  scheduler_schedule(&channel_currents2_interval_job);
 }
 
 static void schedule_jobs(uint32_t time) {
@@ -257,978 +424,804 @@ static void schedule_jobs(uint32_t time) {
       return;
     }
     switch (job->tag) {
-    case STREAM_INTERVAL_JOB_TAG: {
-      switch (job->job.stream_interval_job.stream_id) {
+      case STREAM_INTERVAL_JOB_TAG: {
+        switch (job->job.stream_job.stream_id) {
       case 0: {
-        job->job.stream_interval_job.last_schedule = time;
+        job->job.stream_job.last_schedule = time;
         scheduler_reschedule(time + 500);
         canzero_exit_critical();
-        canzero_message_pdu12_stream_state stream_message;
-        stream_message.state = __oe_state;
+        canzero_message_power_board12_stream_state stream_message;
+        stream_message.m_state = __oe_state;
+        stream_message.m_sdc_status = __oe_sdc_status;
         canzero_frame stream_frame;
-        canzero_serialize_canzero_message_pdu12_stream_state(&stream_message, &stream_frame);
-
+        canzero_serialize_canzero_message_power_board12_stream_state(&stream_message, &stream_frame);
         canzero_can0_send(&stream_frame);
         break;
       }
       case 1: {
-        job->job.stream_interval_job.last_schedule = time;
-        scheduler_reschedule(time + 250);
+        job->job.stream_job.last_schedule = time;
+        scheduler_reschedule(time + 500);
         canzero_exit_critical();
-        canzero_message_pdu12_stream_channel_currents_1 stream_message;
-        stream_message.lp_channel1_current = __oe_lp_channel1_current;
-        stream_message.lp_channel2_current = __oe_lp_channel2_current;
-        stream_message.lp_channel3_current = __oe_lp_channel3_current;
-        stream_message.lp_channel4_current = __oe_lp_channel4_current;
-        stream_message.lp_channel5_current = __oe_lp_channel5_current;
-        stream_message.lp_channel6_current = __oe_lp_channel6_current;
-        stream_message.lp_channel7_current = __oe_lp_channel7_current;
-        stream_message.lp_channel8_current = __oe_lp_channel8_current;
+        canzero_message_power_board12_stream_temperature stream_message;
+        stream_message.m_mcu_temperature = __oe_mcu_temperature;
         canzero_frame stream_frame;
-        canzero_serialize_canzero_message_pdu12_stream_channel_currents_1(&stream_message, &stream_frame);
-        canzero_can0_send(&stream_frame);
+        canzero_serialize_canzero_message_power_board12_stream_temperature(&stream_message, &stream_frame);
+        canzero_can1_send(&stream_frame);
         break;
       }
       case 2: {
-        job->job.stream_interval_job.last_schedule = time;
-        scheduler_reschedule(time + 250);
+        job->job.stream_job.last_schedule = time;
+        scheduler_reschedule(time + 1000);
         canzero_exit_critical();
-        canzero_message_pdu12_stream_channel_currents_2 stream_message;
-        stream_message.lp_channel9_current = __oe_lp_channel9_current;
-        stream_message.lp_channel10_current = __oe_lp_channel10_current;
-        stream_message.lp_channel11_current = __oe_lp_channel11_current;
-        stream_message.lp_channel12_current = __oe_lp_channel12_current;
-        stream_message.lp_channel13_current = __oe_lp_channel13_current;
-        stream_message.lp_channel14_current = __oe_lp_channel14_current;
+        canzero_message_power_board12_stream_errors stream_message;
+        stream_message.m_assertion_fault = __oe_assertion_fault;
+        stream_message.m_error_level_mcu_temperature = __oe_error_level_mcu_temperature;
         canzero_frame stream_frame;
-        canzero_serialize_canzero_message_pdu12_stream_channel_currents_2(&stream_message, &stream_frame);
+        canzero_serialize_canzero_message_power_board12_stream_errors(&stream_message, &stream_frame);
         canzero_can0_send(&stream_frame);
         break;
       }
       case 3: {
-        job->job.stream_interval_job.last_schedule = time;
-        scheduler_reschedule(time + 1000);
+        job->job.stream_job.last_schedule = time;
+        scheduler_reschedule(time + 500);
         canzero_exit_critical();
-        canzero_message_pdu12_stream_power_estimation stream_message;
-        stream_message.total_current = __oe_total_current;
-        stream_message.power_estimation = __oe_power_estimation;
+        canzero_message_power_board12_stream_channel_status stream_message;
+        stream_message.m_levitation_boards_power_channel_status = __oe_levitation_boards_power_channel_status;
+        stream_message.m_guidance_boards_power_channel_status = __oe_guidance_boards_power_channel_status;
+        stream_message.m_motor_driver_power_channel_status = __oe_motor_driver_power_channel_status;
+        stream_message.m_input_board_power_channel_status = __oe_input_board_power_channel_status;
+        stream_message.m_raspberry_pi_power_channel_status = __oe_raspberry_pi_power_channel_status;
+        stream_message.m_antenna_power_channel_status = __oe_antenna_power_channel_status;
+        stream_message.m_led_board_power_channel_status = __oe_led_board_power_channel_status;
         canzero_frame stream_frame;
-        canzero_serialize_canzero_message_pdu12_stream_power_estimation(&stream_message, &stream_frame);
+        canzero_serialize_canzero_message_power_board12_stream_channel_status(&stream_message, &stream_frame);
         canzero_can1_send(&stream_frame);
         break;
       }
       case 4: {
-        job->job.stream_interval_job.last_schedule = time;
-        scheduler_reschedule(time + 3000);
+        job->job.stream_job.last_schedule = time;
+        scheduler_reschedule(time + 100);
         canzero_exit_critical();
-        canzero_message_pdu12_stream_channel_status stream_message;
-        stream_message.lp_channel1_status = __oe_lp_channel1_status;
-        stream_message.lp_channel2_status = __oe_lp_channel2_status;
-        stream_message.lp_channel3_status = __oe_lp_channel3_status;
-        stream_message.lp_channel4_status = __oe_lp_channel4_status;
-        stream_message.lp_channel5_status = __oe_lp_channel5_status;
-        stream_message.lp_channel6_status = __oe_lp_channel6_status;
-        stream_message.lp_channel7_status = __oe_lp_channel7_status;
-        stream_message.lp_channel8_status = __oe_lp_channel8_status;
-        stream_message.lp_channel9_status = __oe_lp_channel9_status;
-        stream_message.lp_channel10_status = __oe_lp_channel10_status;
-        stream_message.lp_channel11_status = __oe_lp_channel11_status;
-        stream_message.lp_channel12_status = __oe_lp_channel12_status;
-        stream_message.lp_channel13_status = __oe_lp_channel13_status;
-        stream_message.lp_channel14_status = __oe_lp_channel14_status;
-        stream_message.sdc_status = __oe_sdc_status;
-        stream_message.error_mcu_over_temperature = __oe_error_mcu_over_temperature;
-        stream_message.warn_mcu_over_temperature = __oe_warn_mcu_over_temperature;
+        canzero_message_power_board12_stream_channel_currents1 stream_message;
+        stream_message.m_levitation_boards_power_channel_current = __oe_levitation_boards_power_channel_current;
+        stream_message.m_guidance_boards_power_channel_current = __oe_guidance_boards_power_channel_current;
+        stream_message.m_motor_driver_power_channel_current = __oe_motor_driver_power_channel_current;
+        stream_message.m_input_board_power_channel_current = __oe_input_board_power_channel_current;
         canzero_frame stream_frame;
-        canzero_serialize_canzero_message_pdu12_stream_channel_status(&stream_message, &stream_frame);
+        canzero_serialize_canzero_message_power_board12_stream_channel_currents1(&stream_message, &stream_frame);
         canzero_can1_send(&stream_frame);
         break;
       }
-      default:
+      case 5: {
+        job->job.stream_job.last_schedule = time;
+        scheduler_reschedule(time + 100);
+        canzero_exit_critical();
+        canzero_message_power_board12_stream_channel_currents2 stream_message;
+        stream_message.m_raspberry_pi_power_channel_current = __oe_raspberry_pi_power_channel_current;
+        stream_message.m_antenna_power_channel_current = __oe_antenna_power_channel_current;
+        stream_message.m_led_board_power_channel_current = __oe_led_board_power_channel_current;
+        canzero_frame stream_frame;
+        canzero_serialize_canzero_message_power_board12_stream_channel_currents2(&stream_message, &stream_frame);
+        canzero_can0_send(&stream_frame);
+        break;
+      }
+        default:
+          canzero_exit_critical();
+          break;
+        }
+        break;
+      }
+      case HEARTBEAT_JOB_TAG: {
+        scheduler_reschedule(time + heartbeat_interval);
+        canzero_exit_critical();
+        canzero_message_heartbeat heartbeat;
+        heartbeat.m_node_id = node_id_power_board12;
+        canzero_frame heartbeat_frame;
+        canzero_serialize_canzero_message_heartbeat(&heartbeat, &heartbeat_frame);
+        canzero_can0_send(&heartbeat_frame);
+        break;
+      }
+      case HEARTBEAT_WDG_JOB_TAG: {
+        scheduler_reschedule(time + heartbeat_wdg_tick_duration);
+        canzero_exit_critical();
+        for (unsigned int i = 0; i < node_id_count; ++i) {
+          heartbeat_wdg_job.job.wdg_job.static_tick_counters[i] 
+            += heartbeat_wdg_job.job.wdg_job.static_wdg_armed[i];
+        }
+        for (unsigned int i = 0; i < MAX_DYN_HEARTBEATS; ++i) {
+          heartbeat_wdg_job.job.wdg_job.dynamic_tick_counters[i] 
+            += heartbeat_wdg_job.job.wdg_job.dynamic_wdg_armed[i];
+        }
+        for (unsigned int i = 0; i < node_id_count; ++i) {
+          if (heartbeat_wdg_job.job.wdg_job.static_tick_counters[i] >= 4) {
+            canzero_wdg_timeout(i);
+          }
+        }
+        for (unsigned int i = 0; i < MAX_DYN_HEARTBEATS; ++i) {
+          if (heartbeat_wdg_job.job.wdg_job.dynamic_tick_counters[i] >= 4) {
+            canzero_wdg_timeout(node_id_count + i);
+          }
+        }
+        break;
+      }
+      case GET_RESP_FRAGMENTATION_JOB_TAG: {
+        get_resp_fragmentation_job *fragmentation_job = &job->job.get_fragmentation_job;
+        canzero_message_get_resp fragmentation_response;
+        fragmentation_response.m_header.m_sof = 0;
+        fragmentation_response.m_header.m_toggle = fragmentation_job->offset % 2;
+        fragmentation_response.m_header.m_od_index = fragmentation_job->od_index;
+        fragmentation_response.m_header.m_client_id = fragmentation_job->client_id;
+        fragmentation_response.m_header.m_server_id = 0xB;
+        fragmentation_response.m_data = fragmentation_job->buffer[fragmentation_job->offset];
+        fragmentation_job->offset += 1;
+        if (fragmentation_job->offset == fragmentation_job->size) {
+          fragmentation_response.m_header.m_eof = 1;
+          scheduler_unschedule();
+        } else {
+          fragmentation_response.m_header.m_eof = 0;
+          scheduler_reschedule(time + get_resp_fragmentation_interval);
+        }
+        canzero_exit_critical();
+        canzero_frame fragmentation_frame;
+        canzero_serialize_canzero_message_get_resp(&fragmentation_response, &fragmentation_frame);
+        canzero_can1_send(&fragmentation_frame);
+        break;
+      }
+      default: {
         canzero_exit_critical();
         break;
       }
-      break;
-    }
-    case HEARTBEAT_JOB_TAG: {
-      scheduler_reschedule(time + heartbeat_interval);
-      canzero_exit_critical();
-      canzero_message_heartbeat heartbeat;
-      heartbeat.node_id = node_id_pdu12;
-      canzero_frame heartbeat_frame;
-      canzero_serialize_canzero_message_heartbeat(&heartbeat, &heartbeat_frame);
-      canzero_can0_send(&heartbeat_frame);
-      break;
-    }
-    case GET_RESP_FRAGMENTATION_JOB_TAG: {
-      get_resp_fragmentation_job *fragmentation_job = &job->job.get_fragmentation_job;
-      canzero_message_get_resp fragmentation_response;
-      fragmentation_response.header.sof = 0;
-      fragmentation_response.header.toggle = fragmentation_job->offset % 2;
-      fragmentation_response.header.od_index = fragmentation_job->od_index;
-      fragmentation_response.header.client_id = 0xB;
-      fragmentation_response.header.server_id = fragmentation_job->server_id;
-      fragmentation_response.data = fragmentation_job->buffer[fragmentation_job->offset];
-      fragmentation_job->offset += 1;
-      if (fragmentation_job->offset == fragmentation_job->size) {
-        fragmentation_response.header.eof = 1;
-        scheduler_unschedule();
-      } else {
-        fragmentation_response.header.eof = 0;
-        scheduler_reschedule(time + get_resp_fragmentation_interval);
-      }
-      canzero_exit_critical();
-      canzero_frame fragmentation_frame;
-      canzero_serialize_canzero_message_get_resp(&fragmentation_response, &fragmentation_frame);
-      canzero_can1_send(&fragmentation_frame);
-      break;
-    }
-    default:
-      canzero_exit_critical();
-      break;
     }
   }
 }
-static uint32_t scheduler_next_job_timeout(){
+
+static uint32_t scheduler_next_job_timeout() {
   return scheduler.heap[0]->climax;
 }
+
+static uint32_t __oe_config_hash_rx_fragmentation_buffer[2];
+static uint32_t __oe_build_time_rx_fragmentation_buffer[2];
+static uint32_t __oe_loop_frequency_rx_fragmentation_buffer[2];
+static uint32_t __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[7];
 static void canzero_handle_get_req(canzero_frame* frame) {
   canzero_message_get_req msg;
   canzero_deserialize_canzero_message_get_req(frame, &msg);
-  if (msg.header.server_id != 11) {
+  if (msg.m_header.m_server_id != 11) {
     return;
   }
-  canzero_message_get_resp resp;
-  switch (msg.header.od_index) {
+  canzero_message_get_resp resp{};
+  switch (msg.m_header.m_od_index) {
   case 0: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_state) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    {
+      uint64_t masked = (__oe_config_hash & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_config_hash_rx_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+      __oe_config_hash_rx_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+    }
+    resp.m_data = __oe_config_hash_rx_fragmentation_buffer[0];
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 0;
+    resp.m_header.m_toggle = 0;
+    schedule_get_resp_fragmentation_job(__oe_config_hash_rx_fragmentation_buffer, 2, 0, msg.m_header.m_client_id);
     break;
   }
   case 1: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel1_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    __oe_build_time_rx_fragmentation_buffer[0] = (__oe_build_time.m_year & (0xFFFFFFFF >> (32 - 16)));
+    __oe_build_time_rx_fragmentation_buffer[0] |= ((__oe_build_time.m_month & (0xFFFFFFFF >> (32 - 8))) << 16);
+    __oe_build_time_rx_fragmentation_buffer[0] |= ((__oe_build_time.m_day & (0xFFFFFFFF >> (32 - 8))) << 24);
+    __oe_build_time_rx_fragmentation_buffer[1] = (__oe_build_time.m_hour & (0xFFFFFFFF >> (32 - 8)));
+    __oe_build_time_rx_fragmentation_buffer[1] |= ((__oe_build_time.m_min & (0xFFFFFFFF >> (32 - 8))) << 8);
+    __oe_build_time_rx_fragmentation_buffer[1] |= ((__oe_build_time.m_sec & (0xFFFFFFFF >> (32 - 8))) << 16);
+
+    resp.m_data = __oe_build_time_rx_fragmentation_buffer[0];
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 0;
+    resp.m_header.m_toggle = 0;
+    schedule_get_resp_fragmentation_job(__oe_build_time_rx_fragmentation_buffer, 2, 1, msg.m_header.m_client_id);
     break;
   }
   case 2: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel1_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_state) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 3: {
-    resp.data |= ((uint32_t)((__oe_lp_channel1_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_sdc_status) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 4: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel2_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_assertion_fault) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 5: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel2_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    {
+      uint64_t masked = (min_u64((__oe_loop_frequency - ((double)0)) / (double)0.00000000005421010862427522, 0xFFFFFFFFFFFFFFFFull) & (0xFFFFFFFFFFFFFFFF >> (64 - 64)));
+      __oe_loop_frequency_rx_fragmentation_buffer[0] = ((uint32_t*)&masked)[0];
+      __oe_loop_frequency_rx_fragmentation_buffer[1] = ((uint32_t*)&masked)[1];
+    }
+    resp.m_data = __oe_loop_frequency_rx_fragmentation_buffer[0];
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 0;
+    resp.m_header.m_toggle = 0;
+    schedule_get_resp_fragmentation_job(__oe_loop_frequency_rx_fragmentation_buffer, 2, 5, msg.m_header.m_client_id);
     break;
   }
   case 6: {
-    resp.data |= ((uint32_t)((__oe_lp_channel2_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_levitation_boards_power_channel_ctrl) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 7: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel3_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= min_u32((__oe_levitation_boards_power_channel_current - (0)) / 0.00007629510948348211, 0xFFFF) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 8: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel3_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_levitation_boards_power_channel_status) & (0xFF >> (8 - 2)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 9: {
-    resp.data |= ((uint32_t)((__oe_lp_channel3_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_guidance_boards_power_channel_ctrl) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 10: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel4_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= min_u32((__oe_guidance_boards_power_channel_current - (0)) / 0.00007629510948348211, 0xFFFF) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 11: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel4_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_guidance_boards_power_channel_status) & (0xFF >> (8 - 2)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 12: {
-    resp.data |= ((uint32_t)((__oe_lp_channel4_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_motor_driver_power_channel_ctrl) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 13: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel5_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= min_u32((__oe_motor_driver_power_channel_current - (0)) / 0.00007629510948348211, 0xFFFF) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 14: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel5_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_motor_driver_power_channel_status) & (0xFF >> (8 - 2)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 15: {
-    resp.data |= ((uint32_t)((__oe_lp_channel5_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_input_board_power_channel_ctrl) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 16: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel6_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= min_u32((__oe_input_board_power_channel_current - (0)) / 0.00007629510948348211, 0xFFFF) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 17: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel6_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_input_board_power_channel_status) & (0xFF >> (8 - 2)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 18: {
-    resp.data |= ((uint32_t)((__oe_lp_channel6_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_raspberry_pi_power_channel_ctrl) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 19: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel7_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= min_u32((__oe_raspberry_pi_power_channel_current - (0)) / 0.00007629510948348211, 0xFFFF) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 20: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel7_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_raspberry_pi_power_channel_status) & (0xFF >> (8 - 2)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 21: {
-    resp.data |= ((uint32_t)((__oe_lp_channel7_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_antenna_power_channel_ctrl) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 22: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel8_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= min_u32((__oe_antenna_power_channel_current - (0)) / 0.00007629510948348211, 0xFFFF) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 23: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel8_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= min_u32((__oe_antenna_power_channel_status - (0)) / 0.00007629510948348211, 0xFFFF) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 24: {
-    resp.data |= ((uint32_t)((__oe_lp_channel8_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_led_board_power_channel_ctrl) & (0xFF >> (8 - 1)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 25: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel9_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= min_u32((__oe_led_board_power_channel_current - (0)) / 0.0196078431372549, 0xFF) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 26: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel9_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_led_board_power_channel_status) & (0xFF >> (8 - 2)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 27: {
-    resp.data |= ((uint32_t)((__oe_lp_channel9_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= min_u32((__oe_mcu_temperature - (-1)) / 0.592156862745098, 0xFF) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 28: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel10_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_error_level_mcu_temperature) & (0xFF >> (8 - 2)))) << 0;
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 1;
+    resp.m_header.m_toggle = 0;
     break;
   }
   case 29: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel10_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 30: {
-    resp.data |= ((uint32_t)((__oe_lp_channel10_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 31: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel11_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 32: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel11_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 33: {
-    resp.data |= ((uint32_t)((__oe_lp_channel11_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 34: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel12_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 35: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel12_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 36: {
-    resp.data |= ((uint32_t)((__oe_lp_channel12_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 37: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel13_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 38: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel13_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 39: {
-    resp.data |= ((uint32_t)((__oe_lp_channel13_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 40: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel14_control) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 41: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_lp_channel14_status) & (0xFF >> (8 - 2)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 42: {
-    resp.data |= ((uint32_t)((__oe_lp_channel14_current - (0)) / 0.011764705882352941)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 43: {
-    resp.data |= ((uint32_t)((__oe_total_current - (0)) / 0.0012207217517357137)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 44: {
-    resp.data |= ((uint32_t)((__oe_power_estimation - (0)) / 0.030518043793392843)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 45: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_sdc_status) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 46: {
-    resp.data |= ((uint32_t)((__oe_mcu_temperature - (0)) / 0.7843137254901961)) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 47: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_error_mcu_over_temperature) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
-    break;
-  }
-  case 48: {
-    resp.data |= ((uint32_t)(((uint8_t)__oe_warn_mcu_over_temperature) & (0xFF >> (8 - 1)))) << 0;
-    resp.header.sof = 1;
-    resp.header.eof = 1;
-    resp.header.toggle = 0;
+    __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[0] = (__oe_error_level_config_mcu_temperature.m_ignore_info & (0xFFFFFFFF >> (32 - 1)));
+    {
+    uint32_t masked = (min_u32((__oe_error_level_config_mcu_temperature.m_info_thresh - ((float)-10000)) / (float)0.000004656612874161595, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[0] |= (masked << 1);
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[1] = (masked >> 31);
+    }
+    {
+    uint32_t masked = (min_u32((__oe_error_level_config_mcu_temperature.m_info_timeout - ((float)0)) / (float)0.000000013969838622484784, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[1] |= (masked << 1);
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[2] = (masked >> 31);
+    }
+    __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[2] |= ((__oe_error_level_config_mcu_temperature.m_ignore_warning & (0xFFFFFFFF >> (32 - 1))) << 1);
+    {
+    uint32_t masked = (min_u32((__oe_error_level_config_mcu_temperature.m_warning_thresh - ((float)-10000)) / (float)0.000004656612874161595, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[2] |= (masked << 2);
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[3] = (masked >> 30);
+    }
+    {
+    uint32_t masked = (min_u32((__oe_error_level_config_mcu_temperature.m_warning_timeout - ((float)0)) / (float)0.000000013969838622484784, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[3] |= (masked << 2);
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[4] = (masked >> 30);
+    }
+    __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[4] |= ((__oe_error_level_config_mcu_temperature.m_ignore_error & (0xFFFFFFFF >> (32 - 1))) << 2);
+    {
+    uint32_t masked = (min_u32((__oe_error_level_config_mcu_temperature.m_error_thresh - ((float)-10000)) / (float)0.000004656612874161595, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[4] |= (masked << 3);
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[5] = (masked >> 29);
+    }
+    {
+    uint32_t masked = (min_u32((__oe_error_level_config_mcu_temperature.m_error_timeout - ((float)0)) / (float)0.000000013969838622484784, 0xFFFFFFFFul) & (0xFFFFFFFF >> (32 - 32)));
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[5] |= (masked << 3);
+      __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[6] = (masked >> 29);
+    }
+
+    resp.m_data = __oe_error_level_config_mcu_temperature_rx_fragmentation_buffer[0];
+    resp.m_header.m_sof = 1;
+    resp.m_header.m_eof = 0;
+    resp.m_header.m_toggle = 0;
+    schedule_get_resp_fragmentation_job(__oe_error_level_config_mcu_temperature_rx_fragmentation_buffer, 7, 29, msg.m_header.m_client_id);
     break;
   }
   }
-  resp.header.od_index = msg.header.od_index;
-  resp.header.client_id = msg.header.client_id;
-  resp.header.server_id = msg.header.server_id;
+  resp.m_header.m_od_index = msg.m_header.m_od_index;
+  resp.m_header.m_client_id = msg.m_header.m_client_id;
+  resp.m_header.m_server_id = msg.m_header.m_server_id;
   canzero_frame resp_frame;
   canzero_serialize_canzero_message_get_resp(&resp, &resp_frame);
   canzero_can1_send(&resp_frame);
 }
+static uint32_t config_hash_tmp_tx_fragmentation_buffer[2];
+static uint32_t config_hash_tmp_tx_fragmentation_offset = 0;
+static uint32_t build_time_tmp_tx_fragmentation_buffer[2];
+static uint32_t build_time_tmp_tx_fragmentation_offset = 0;
+static uint32_t loop_frequency_tmp_tx_fragmentation_buffer[2];
+static uint32_t loop_frequency_tmp_tx_fragmentation_offset = 0;
+static uint32_t error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[7];
+static uint32_t error_level_config_mcu_temperature_tmp_tx_fragmentation_offset = 0;
 static void canzero_handle_set_req(canzero_frame* frame) {
   canzero_message_set_req msg;
   canzero_deserialize_canzero_message_set_req(frame, &msg);
-  if (msg.header.server_id != 11) {
+  if (msg.m_header.m_server_id != 11) {
     return;
   }
-  canzero_message_set_resp resp;
-  switch (msg.header.od_index) {
+  canzero_message_set_resp resp{};
+  switch (msg.m_header.m_od_index) {
   case 0 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
+    if (msg.m_header.m_sof == 1) {
+      if (msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 0) {
+        return; //TODO proper error response frame!
+      }
+      config_hash_tmp_tx_fragmentation_offset = 0;
+    }else {
+      config_hash_tmp_tx_fragmentation_offset += 1;
+      if (config_hash_tmp_tx_fragmentation_offset >= 2) {
+        return;
+      }
+    }
+    config_hash_tmp_tx_fragmentation_buffer[config_hash_tmp_tx_fragmentation_offset] = msg.m_data;
+    if (msg.m_header.m_eof == 0) {
       return;
     }
-    pdu_state state_tmp;
-    state_tmp = (pdu_state)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_state(state_tmp);
+    uint64_t config_hash_tmp;
+    config_hash_tmp = (uint64_t)config_hash_tmp_tx_fragmentation_buffer[0] | (((uint64_t)(config_hash_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) << 32);
+    canzero_set_config_hash(config_hash_tmp);
     break;
   }
   case 1 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
+    if (msg.m_header.m_sof == 1) {
+      if (msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 0) {
+        return; //TODO proper error response frame!
+      }
+      build_time_tmp_tx_fragmentation_offset = 0;
+    }else {
+      build_time_tmp_tx_fragmentation_offset += 1;
+      if (build_time_tmp_tx_fragmentation_offset >= 2) {
+        return;
+      }
+    }
+    build_time_tmp_tx_fragmentation_buffer[build_time_tmp_tx_fragmentation_offset] = msg.m_data;
+    if (msg.m_header.m_eof == 0) {
       return;
     }
-    pdu_channel_control lp_channel1_control_tmp;
-    lp_channel1_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel1_control(lp_channel1_control_tmp);
+    date_time build_time_tmp;
+    build_time_tmp.m_year = (build_time_tmp_tx_fragmentation_buffer[0] & (0xFFFFFFFF >> (32 - 16)));
+    build_time_tmp.m_month = (build_time_tmp_tx_fragmentation_buffer[0] >> 16) & (0xFFFFFFFF >> (32 - 8));
+    build_time_tmp.m_day = (build_time_tmp_tx_fragmentation_buffer[0] >> 24) & (0xFFFFFFFF >> (32 - 8));
+    build_time_tmp.m_hour = (build_time_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 8)));
+    build_time_tmp.m_min = (build_time_tmp_tx_fragmentation_buffer[1] >> 8) & (0xFFFFFFFF >> (32 - 8));
+    build_time_tmp.m_sec = (build_time_tmp_tx_fragmentation_buffer[1] >> 16) & (0xFFFFFFFF >> (32 - 8));
+    canzero_set_build_time(build_time_tmp);
     break;
   }
   case 2 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
       return;
     }
-    pdu_channel_status lp_channel1_status_tmp;
-    lp_channel1_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel1_status(lp_channel1_status_tmp);
+    pdu_state state_tmp;
+    state_tmp = ((pdu_state)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
+    canzero_set_state(state_tmp);
     break;
   }
   case 3 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel1_current_tmp;
-    lp_channel1_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel1_current(lp_channel1_current_tmp);
-    break;
-  }
-  case 4 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel2_control_tmp;
-    lp_channel2_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel2_control(lp_channel2_control_tmp);
-    break;
-  }
-  case 5 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel2_status_tmp;
-    lp_channel2_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel2_status(lp_channel2_status_tmp);
-    break;
-  }
-  case 6 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel2_current_tmp;
-    lp_channel2_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel2_current(lp_channel2_current_tmp);
-    break;
-  }
-  case 7 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel3_control_tmp;
-    lp_channel3_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel3_control(lp_channel3_control_tmp);
-    break;
-  }
-  case 8 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel3_status_tmp;
-    lp_channel3_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel3_status(lp_channel3_status_tmp);
-    break;
-  }
-  case 9 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel3_current_tmp;
-    lp_channel3_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel3_current(lp_channel3_current_tmp);
-    break;
-  }
-  case 10 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel4_control_tmp;
-    lp_channel4_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel4_control(lp_channel4_control_tmp);
-    break;
-  }
-  case 11 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel4_status_tmp;
-    lp_channel4_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel4_status(lp_channel4_status_tmp);
-    break;
-  }
-  case 12 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel4_current_tmp;
-    lp_channel4_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel4_current(lp_channel4_current_tmp);
-    break;
-  }
-  case 13 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel5_control_tmp;
-    lp_channel5_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel5_control(lp_channel5_control_tmp);
-    break;
-  }
-  case 14 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel5_status_tmp;
-    lp_channel5_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel5_status(lp_channel5_status_tmp);
-    break;
-  }
-  case 15 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel5_current_tmp;
-    lp_channel5_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel5_current(lp_channel5_current_tmp);
-    break;
-  }
-  case 16 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel6_control_tmp;
-    lp_channel6_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel6_control(lp_channel6_control_tmp);
-    break;
-  }
-  case 17 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel6_status_tmp;
-    lp_channel6_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel6_status(lp_channel6_status_tmp);
-    break;
-  }
-  case 18 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel6_current_tmp;
-    lp_channel6_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel6_current(lp_channel6_current_tmp);
-    break;
-  }
-  case 19 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel7_control_tmp;
-    lp_channel7_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel7_control(lp_channel7_control_tmp);
-    break;
-  }
-  case 20 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel7_status_tmp;
-    lp_channel7_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel7_status(lp_channel7_status_tmp);
-    break;
-  }
-  case 21 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel7_current_tmp;
-    lp_channel7_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel7_current(lp_channel7_current_tmp);
-    break;
-  }
-  case 22 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel8_control_tmp;
-    lp_channel8_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel8_control(lp_channel8_control_tmp);
-    break;
-  }
-  case 23 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel8_status_tmp;
-    lp_channel8_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel8_status(lp_channel8_status_tmp);
-    break;
-  }
-  case 24 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel8_current_tmp;
-    lp_channel8_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel8_current(lp_channel8_current_tmp);
-    break;
-  }
-  case 25 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel9_control_tmp;
-    lp_channel9_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel9_control(lp_channel9_control_tmp);
-    break;
-  }
-  case 26 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel9_status_tmp;
-    lp_channel9_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel9_status(lp_channel9_status_tmp);
-    break;
-  }
-  case 27 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel9_current_tmp;
-    lp_channel9_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel9_current(lp_channel9_current_tmp);
-    break;
-  }
-  case 28 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel10_control_tmp;
-    lp_channel10_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel10_control(lp_channel10_control_tmp);
-    break;
-  }
-  case 29 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel10_status_tmp;
-    lp_channel10_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel10_status(lp_channel10_status_tmp);
-    break;
-  }
-  case 30 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel10_current_tmp;
-    lp_channel10_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel10_current(lp_channel10_current_tmp);
-    break;
-  }
-  case 31 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel11_control_tmp;
-    lp_channel11_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel11_control(lp_channel11_control_tmp);
-    break;
-  }
-  case 32 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel11_status_tmp;
-    lp_channel11_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel11_status(lp_channel11_status_tmp);
-    break;
-  }
-  case 33 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel11_current_tmp;
-    lp_channel11_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel11_current(lp_channel11_current_tmp);
-    break;
-  }
-  case 34 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel12_control_tmp;
-    lp_channel12_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel12_control(lp_channel12_control_tmp);
-    break;
-  }
-  case 35 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel12_status_tmp;
-    lp_channel12_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel12_status(lp_channel12_status_tmp);
-    break;
-  }
-  case 36 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel12_current_tmp;
-    lp_channel12_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel12_current(lp_channel12_current_tmp);
-    break;
-  }
-  case 37 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel13_control_tmp;
-    lp_channel13_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel13_control(lp_channel13_control_tmp);
-    break;
-  }
-  case 38 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel13_status_tmp;
-    lp_channel13_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel13_status(lp_channel13_status_tmp);
-    break;
-  }
-  case 39 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel13_current_tmp;
-    lp_channel13_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel13_current(lp_channel13_current_tmp);
-    break;
-  }
-  case 40 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_control lp_channel14_control_tmp;
-    lp_channel14_control_tmp = (pdu_channel_control)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_lp_channel14_control(lp_channel14_control_tmp);
-    break;
-  }
-  case 41 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    pdu_channel_status lp_channel14_status_tmp;
-    lp_channel14_status_tmp = (pdu_channel_status)((msg.data & (0xFFFFFFFF >> (32 - 2))));
-    canzero_set_lp_channel14_status(lp_channel14_status_tmp);
-    break;
-  }
-  case 42 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float lp_channel14_current_tmp;
-    lp_channel14_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.011764705882352941 + 0);
-    canzero_set_lp_channel14_current(lp_channel14_current_tmp);
-    break;
-  }
-  case 43 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float total_current_tmp;
-    total_current_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 16))) * 0.0012207217517357137 + 0);
-    canzero_set_total_current(total_current_tmp);
-    break;
-  }
-  case 44 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
-      return;
-    }
-    float power_estimation_tmp;
-    power_estimation_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 16))) * 0.030518043793392843 + 0);
-    canzero_set_power_estimation(power_estimation_tmp);
-    break;
-  }
-  case 45 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
       return;
     }
     sdc_status sdc_status_tmp;
-    sdc_status_tmp = (sdc_status)((msg.data & (0xFFFFFFFF >> (32 - 1))));
+    sdc_status_tmp = ((sdc_status)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
     canzero_set_sdc_status(sdc_status_tmp);
     break;
   }
-  case 46 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
+  case 4 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    error_flag assertion_fault_tmp;
+    assertion_fault_tmp = ((error_flag)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
+    canzero_set_assertion_fault(assertion_fault_tmp);
+    break;
+  }
+  case 5 : {
+    if (msg.m_header.m_sof == 1) {
+      if (msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 0) {
+        return; //TODO proper error response frame!
+      }
+      loop_frequency_tmp_tx_fragmentation_offset = 0;
+    }else {
+      loop_frequency_tmp_tx_fragmentation_offset += 1;
+      if (loop_frequency_tmp_tx_fragmentation_offset >= 2) {
+        return;
+      }
+    }
+    loop_frequency_tmp_tx_fragmentation_buffer[loop_frequency_tmp_tx_fragmentation_offset] = msg.m_data;
+    if (msg.m_header.m_eof == 0) {
+      return;
+    }
+    double loop_frequency_tmp;
+    loop_frequency_tmp = ((uint64_t)loop_frequency_tmp_tx_fragmentation_buffer[0] | (((uint64_t)(loop_frequency_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 32)))) << 32)) * 0.00000000005421010862427522 + 0;
+    canzero_set_loop_frequency(loop_frequency_tmp);
+    break;
+  }
+  case 6 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_control levitation_boards_power_channel_ctrl_tmp;
+    levitation_boards_power_channel_ctrl_tmp = ((pdu_channel_control)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
+    canzero_set_levitation_boards_power_channel_ctrl(levitation_boards_power_channel_ctrl_tmp);
+    break;
+  }
+  case 7 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    float levitation_boards_power_channel_current_tmp;
+    levitation_boards_power_channel_current_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.00007629510948348211 + 0);
+    canzero_set_levitation_boards_power_channel_current(levitation_boards_power_channel_current_tmp);
+    break;
+  }
+  case 8 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_status levitation_boards_power_channel_status_tmp;
+    levitation_boards_power_channel_status_tmp = ((pdu_channel_status)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 2))));
+    canzero_set_levitation_boards_power_channel_status(levitation_boards_power_channel_status_tmp);
+    break;
+  }
+  case 9 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_control guidance_boards_power_channel_ctrl_tmp;
+    guidance_boards_power_channel_ctrl_tmp = ((pdu_channel_control)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
+    canzero_set_guidance_boards_power_channel_ctrl(guidance_boards_power_channel_ctrl_tmp);
+    break;
+  }
+  case 10 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    float guidance_boards_power_channel_current_tmp;
+    guidance_boards_power_channel_current_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.00007629510948348211 + 0);
+    canzero_set_guidance_boards_power_channel_current(guidance_boards_power_channel_current_tmp);
+    break;
+  }
+  case 11 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_status guidance_boards_power_channel_status_tmp;
+    guidance_boards_power_channel_status_tmp = ((pdu_channel_status)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 2))));
+    canzero_set_guidance_boards_power_channel_status(guidance_boards_power_channel_status_tmp);
+    break;
+  }
+  case 12 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_control motor_driver_power_channel_ctrl_tmp;
+    motor_driver_power_channel_ctrl_tmp = ((pdu_channel_control)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
+    canzero_set_motor_driver_power_channel_ctrl(motor_driver_power_channel_ctrl_tmp);
+    break;
+  }
+  case 13 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    float motor_driver_power_channel_current_tmp;
+    motor_driver_power_channel_current_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.00007629510948348211 + 0);
+    canzero_set_motor_driver_power_channel_current(motor_driver_power_channel_current_tmp);
+    break;
+  }
+  case 14 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_status motor_driver_power_channel_status_tmp;
+    motor_driver_power_channel_status_tmp = ((pdu_channel_status)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 2))));
+    canzero_set_motor_driver_power_channel_status(motor_driver_power_channel_status_tmp);
+    break;
+  }
+  case 15 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_control input_board_power_channel_ctrl_tmp;
+    input_board_power_channel_ctrl_tmp = ((pdu_channel_control)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
+    canzero_set_input_board_power_channel_ctrl(input_board_power_channel_ctrl_tmp);
+    break;
+  }
+  case 16 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    float input_board_power_channel_current_tmp;
+    input_board_power_channel_current_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.00007629510948348211 + 0);
+    canzero_set_input_board_power_channel_current(input_board_power_channel_current_tmp);
+    break;
+  }
+  case 17 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_status input_board_power_channel_status_tmp;
+    input_board_power_channel_status_tmp = ((pdu_channel_status)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 2))));
+    canzero_set_input_board_power_channel_status(input_board_power_channel_status_tmp);
+    break;
+  }
+  case 18 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_control raspberry_pi_power_channel_ctrl_tmp;
+    raspberry_pi_power_channel_ctrl_tmp = ((pdu_channel_control)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
+    canzero_set_raspberry_pi_power_channel_ctrl(raspberry_pi_power_channel_ctrl_tmp);
+    break;
+  }
+  case 19 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    float raspberry_pi_power_channel_current_tmp;
+    raspberry_pi_power_channel_current_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.00007629510948348211 + 0);
+    canzero_set_raspberry_pi_power_channel_current(raspberry_pi_power_channel_current_tmp);
+    break;
+  }
+  case 20 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_status raspberry_pi_power_channel_status_tmp;
+    raspberry_pi_power_channel_status_tmp = ((pdu_channel_status)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 2))));
+    canzero_set_raspberry_pi_power_channel_status(raspberry_pi_power_channel_status_tmp);
+    break;
+  }
+  case 21 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_control antenna_power_channel_ctrl_tmp;
+    antenna_power_channel_ctrl_tmp = ((pdu_channel_control)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
+    canzero_set_antenna_power_channel_ctrl(antenna_power_channel_ctrl_tmp);
+    break;
+  }
+  case 22 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    float antenna_power_channel_current_tmp;
+    antenna_power_channel_current_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.00007629510948348211 + 0);
+    canzero_set_antenna_power_channel_current(antenna_power_channel_current_tmp);
+    break;
+  }
+  case 23 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    float antenna_power_channel_status_tmp;
+    antenna_power_channel_status_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 16))) * 0.00007629510948348211 + 0);
+    canzero_set_antenna_power_channel_status(antenna_power_channel_status_tmp);
+    break;
+  }
+  case 24 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_control led_board_power_channel_ctrl_tmp;
+    led_board_power_channel_ctrl_tmp = ((pdu_channel_control)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 1))));
+    canzero_set_led_board_power_channel_ctrl(led_board_power_channel_ctrl_tmp);
+    break;
+  }
+  case 25 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    float led_board_power_channel_current_tmp;
+    led_board_power_channel_current_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 8))) * 0.0196078431372549 + 0);
+    canzero_set_led_board_power_channel_current(led_board_power_channel_current_tmp);
+    break;
+  }
+  case 26 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
+      return;
+    }
+    pdu_channel_status led_board_power_channel_status_tmp;
+    led_board_power_channel_status_tmp = ((pdu_channel_status)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 2))));
+    canzero_set_led_board_power_channel_status(led_board_power_channel_status_tmp);
+    break;
+  }
+  case 27 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
       return;
     }
     float mcu_temperature_tmp;
-    mcu_temperature_tmp = (float)((msg.data & (0xFFFFFFFF >> (32 - 8))) * 0.7843137254901961 + 0);
+    mcu_temperature_tmp = (float)(((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 8))) * 0.592156862745098 + -1);
     canzero_set_mcu_temperature(mcu_temperature_tmp);
     break;
   }
-  case 47 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
+  case 28 : {
+    if (msg.m_header.m_sof != 1 || msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 1) {
       return;
     }
-    error_flag error_mcu_over_temperature_tmp;
-    error_mcu_over_temperature_tmp = (error_flag)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_error_mcu_over_temperature(error_mcu_over_temperature_tmp);
+    error_level error_level_mcu_temperature_tmp;
+    error_level_mcu_temperature_tmp = ((error_level)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 2))));
+    canzero_set_error_level_mcu_temperature(error_level_mcu_temperature_tmp);
     break;
   }
-  case 48 : {
-    if (msg.header.sof != 1 || msg.header.toggle != 0 || msg.header.eof != 1) {
+  case 29 : {
+    if (msg.m_header.m_sof == 1) {
+      if (msg.m_header.m_toggle != 0 || msg.m_header.m_eof != 0) {
+        return; //TODO proper error response frame!
+      }
+      error_level_config_mcu_temperature_tmp_tx_fragmentation_offset = 0;
+    }else {
+      error_level_config_mcu_temperature_tmp_tx_fragmentation_offset += 1;
+      if (error_level_config_mcu_temperature_tmp_tx_fragmentation_offset >= 7) {
+        return;
+      }
+    }
+    error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[error_level_config_mcu_temperature_tmp_tx_fragmentation_offset] = msg.m_data;
+    if (msg.m_header.m_eof == 0) {
       return;
     }
-    error_flag warn_mcu_over_temperature_tmp;
-    warn_mcu_over_temperature_tmp = (error_flag)((msg.data & (0xFFFFFFFF >> (32 - 1))));
-    canzero_set_warn_mcu_over_temperature(warn_mcu_over_temperature_tmp);
+    error_level_config error_level_config_mcu_temperature_tmp;
+    error_level_config_mcu_temperature_tmp.m_ignore_info = ((bool_t)((error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[0] & (0xFFFFFFFF >> (32 - 1)))));
+    error_level_config_mcu_temperature_tmp.m_info_thresh = ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[0] >> 1) | ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[1] & (0xFFFFFFFF >> (32 - 1))) << 31)) * 0.000004656612874161595 + -10000;
+    error_level_config_mcu_temperature_tmp.m_info_timeout = ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[1] >> 1) | ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[2] & (0xFFFFFFFF >> (32 - 1))) << 31)) * 0.000000013969838622484784 + 0;
+    error_level_config_mcu_temperature_tmp.m_ignore_warning = ((bool_t)((error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[2] >> 1) & (0xFFFFFFFF >> (32 - 1))));
+    error_level_config_mcu_temperature_tmp.m_warning_thresh = ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[2] >> 2) | ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[3] & (0xFFFFFFFF >> (32 - 2))) << 30)) * 0.000004656612874161595 + -10000;
+    error_level_config_mcu_temperature_tmp.m_warning_timeout = ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[3] >> 2) | ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[4] & (0xFFFFFFFF >> (32 - 2))) << 30)) * 0.000000013969838622484784 + 0;
+    error_level_config_mcu_temperature_tmp.m_ignore_error = ((bool_t)((error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[4] >> 2) & (0xFFFFFFFF >> (32 - 1))));
+    error_level_config_mcu_temperature_tmp.m_error_thresh = ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[4] >> 3) | ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[5] & (0xFFFFFFFF >> (32 - 3))) << 29)) * 0.000004656612874161595 + -10000;
+    error_level_config_mcu_temperature_tmp.m_error_timeout = ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[5] >> 3) | ((uint64_t)(error_level_config_mcu_temperature_tmp_tx_fragmentation_buffer[6] & (0xFFFFFFFF >> (32 - 3))) << 29)) * 0.000000013969838622484784 + 0;
+    canzero_set_error_level_config_mcu_temperature(error_level_config_mcu_temperature_tmp);
     break;
   }
   default:
     return;
   }
-  resp.header.od_index = msg.header.od_index;
-  resp.header.client_id = msg.header.client_id;
-  resp.header.server_id = msg.header.server_id;
-  resp.header.erno = set_resp_erno_Success;
+  resp.m_header.m_od_index = msg.m_header.m_od_index;
+  resp.m_header.m_client_id = msg.m_header.m_client_id;
+  resp.m_header.m_server_id = msg.m_header.m_server_id;
+  resp.m_header.m_erno = set_resp_erno_Success;
   canzero_frame resp_frame;
   canzero_serialize_canzero_message_set_resp(&resp, &resp_frame);
   canzero_can1_send(&resp_frame);
 
-}
-static void canzero_handle_master_stream_pdu12_control(canzero_frame* frame) {
-  canzero_message_master_stream_pdu12_control msg;
-  canzero_deserialize_canzero_message_master_stream_pdu12_control(frame, &msg);
-  canzero_set_lp_channel1_control(msg.pdu12_lp_channel1_control);
-  canzero_set_lp_channel2_control(msg.pdu12_lp_channel2_control);
-  canzero_set_lp_channel3_control(msg.pdu12_lp_channel3_control);
-  canzero_set_lp_channel4_control(msg.pdu12_lp_channel4_control);
-  canzero_set_lp_channel5_control(msg.pdu12_lp_channel5_control);
-  canzero_set_lp_channel6_control(msg.pdu12_lp_channel6_control);
-  canzero_set_lp_channel7_control(msg.pdu12_lp_channel7_control);
-  canzero_set_lp_channel8_control(msg.pdu12_lp_channel8_control);
-  canzero_set_lp_channel9_control(msg.pdu12_lp_channel9_control);
-  canzero_set_lp_channel10_control(msg.pdu12_lp_channel10_control);
-  canzero_set_lp_channel11_control(msg.pdu12_lp_channel11_control);
-  canzero_set_lp_channel12_control(msg.pdu12_lp_channel12_control);
-  canzero_set_lp_channel13_control(msg.pdu12_lp_channel13_control);
-  canzero_set_lp_channel14_control(msg.pdu12_lp_channel14_control);
 }
 __attribute__((weak)) void canzero_handle_heartbeat(canzero_frame* frame) {
   canzero_message_heartbeat msg;
@@ -1238,13 +1231,10 @@ void canzero_can0_poll() {
   canzero_frame frame;
   while (canzero_can0_recv(&frame)) {
     switch (frame.id) {
-      case 0x13B:
+      case 0x9F:
         canzero_handle_get_req(&frame);
         break;
-      case 0x15B:
-        canzero_handle_set_req(&frame);
-        break;
-      case 0x17B:
+      case 0xDF:
         canzero_handle_heartbeat(&frame);
         break;
     }
@@ -1254,8 +1244,8 @@ void canzero_can1_poll() {
   canzero_frame frame;
   while (canzero_can1_recv(&frame)) {
     switch (frame.id) {
-      case 0x50:
-        canzero_handle_master_stream_pdu12_control(&frame);
+      case 0xBF:
+        canzero_handle_set_req(&frame);
         break;
     }
   }
@@ -1264,7 +1254,66 @@ uint32_t canzero_update_continue(uint32_t time){
   schedule_jobs(time);
   return scheduler_next_job_timeout();
 }
+#define COMPUTE_BUILD_YEAR \
+    ( (__DATE__[ 7] - '0') * 1000 + \
+        (__DATE__[ 8] - '0') *  100 + \
+        (__DATE__[ 9] - '0') *   10 + \
+        (__DATE__[10] - '0') \
+    )
+#define COMPUTE_BUILD_DAY \
+    ( \
+        ((__DATE__[4] >= '0') ? (__DATE__[4] - '0') * 10 : 0) + \
+        (__DATE__[5] - '0') \
+    )
+#define BUILD_MONTH_IS_JAN (__DATE__[0] == 'J' && __DATE__[1] == 'a' && __DATE__[2] == 'n')
+#define BUILD_MONTH_IS_FEB (__DATE__[0] == 'F')
+#define BUILD_MONTH_IS_MAR (__DATE__[0] == 'M' && __DATE__[1] == 'a' && __DATE__[2] == 'r')
+#define BUILD_MONTH_IS_APR (__DATE__[0] == 'A' && __DATE__[1] == 'p')
+#define BUILD_MONTH_IS_MAY (__DATE__[0] == 'M' && __DATE__[1] == 'a' && __DATE__[2] == 'y')
+#define BUILD_MONTH_IS_JUN (__DATE__[0] == 'J' && __DATE__[1] == 'u' && __DATE__[2] == 'n')
+#define BUILD_MONTH_IS_JUL (__DATE__[0] == 'J' && __DATE__[1] == 'u' && __DATE__[2] == 'l')
+#define BUILD_MONTH_IS_AUG (__DATE__[0] == 'A' && __DATE__[1] == 'u')
+#define BUILD_MONTH_IS_SEP (__DATE__[0] == 'S')
+#define BUILD_MONTH_IS_OCT (__DATE__[0] == 'O')
+#define BUILD_MONTH_IS_NOV (__DATE__[0] == 'N')
+#define BUILD_MONTH_IS_DEC (__DATE__[0] == 'D')
+#define COMPUTE_BUILD_MONTH \
+    ( \
+        (BUILD_MONTH_IS_JAN) ?  1 : \
+        (BUILD_MONTH_IS_FEB) ?  2 : \
+        (BUILD_MONTH_IS_MAR) ?  3 : \
+        (BUILD_MONTH_IS_APR) ?  4 : \
+        (BUILD_MONTH_IS_MAY) ?  5 : \
+        (BUILD_MONTH_IS_JUN) ?  6 : \
+        (BUILD_MONTH_IS_JUL) ?  7 : \
+        (BUILD_MONTH_IS_AUG) ?  8 : \
+        (BUILD_MONTH_IS_SEP) ?  9 : \
+        (BUILD_MONTH_IS_OCT) ? 10 : \
+        (BUILD_MONTH_IS_NOV) ? 11 : \
+        (BUILD_MONTH_IS_DEC) ? 12 : \
+        /* error default */  99 \
+    )
+#define COMPUTE_BUILD_HOUR ((__TIME__[0] - '0') * 10 + __TIME__[1] - '0')
+#define COMPUTE_BUILD_MIN  ((__TIME__[3] - '0') * 10 + __TIME__[4] - '0')
+#define COMPUTE_BUILD_SEC  ((__TIME__[6] - '0') * 10 + __TIME__[7] - '0')
+#define BUILD_DATE_IS_BAD (__DATE__[0] == '?')
+#define BUILD_YEAR  ((BUILD_DATE_IS_BAD) ? 99 : COMPUTE_BUILD_YEAR)
+#define BUILD_MONTH ((BUILD_DATE_IS_BAD) ? 99 : COMPUTE_BUILD_MONTH)
+#define BUILD_DAY   ((BUILD_DATE_IS_BAD) ? 99 : COMPUTE_BUILD_DAY)
+#define BUILD_TIME_IS_BAD (__TIME__[0] == '?')
+#define BUILD_HOUR  ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_HOUR)
+#define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
+#define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
+  __oe_config_hash = 8734496441462941762ull;
+  __oe_build_time = {
+    .m_year = BUILD_YEAR,
+    .m_month = BUILD_MONTH,
+    .m_day = BUILD_DAY,
+    .m_hour = BUILD_HOUR,
+    .m_min = BUILD_MIN,
+    .m_sec = BUILD_SEC
+  };
   canzero_can0_setup(1000000, NULL, 0);
   canzero_can1_setup(1000000, NULL, 0);
 
@@ -1272,10 +1321,11 @@ void canzero_init() {
   scheduler.size = 0;
   schedule_heartbeat_job();
   schedule_state_interval_job();
-  schedule_channel_currents_1_interval_job();
-  schedule_channel_currents_2_interval_job();
-  schedule_power_estimation_interval_job();
+  schedule_temperature_interval_job();
+  schedule_errors_interval_job();
   schedule_channel_status_interval_job();
+  schedule_channel_currents1_interval_job();
+  schedule_channel_currents2_interval_job();
 
 }
 void canzero_set_state(pdu_state value) {
@@ -1283,163 +1333,9 @@ void canzero_set_state(pdu_state value) {
   if (__oe_state != value) {
     __oe_state = value;
     uint32_t time = canzero_get_time();
-    if (state_interval_job.climax > state_interval_job.job.stream_interval_job.last_schedule + 0) {
-      state_interval_job.climax = state_interval_job.job.stream_interval_job.last_schedule + 0;
+    if (state_interval_job.climax > state_interval_job.job.stream_job.last_schedule + 0) {
+      state_interval_job.climax = state_interval_job.job.stream_job.last_schedule + 0;
       scheduler_promote_job(&state_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel1_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel1_status;
-  if (__oe_lp_channel1_status != value) {
-    __oe_lp_channel1_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel2_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel2_status;
-  if (__oe_lp_channel2_status != value) {
-    __oe_lp_channel2_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel3_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel3_status;
-  if (__oe_lp_channel3_status != value) {
-    __oe_lp_channel3_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel4_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel4_status;
-  if (__oe_lp_channel4_status != value) {
-    __oe_lp_channel4_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel5_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel5_status;
-  if (__oe_lp_channel5_status != value) {
-    __oe_lp_channel5_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel6_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel6_status;
-  if (__oe_lp_channel6_status != value) {
-    __oe_lp_channel6_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel7_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel7_status;
-  if (__oe_lp_channel7_status != value) {
-    __oe_lp_channel7_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel8_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel8_status;
-  if (__oe_lp_channel8_status != value) {
-    __oe_lp_channel8_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel9_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel9_status;
-  if (__oe_lp_channel9_status != value) {
-    __oe_lp_channel9_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel10_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel10_status;
-  if (__oe_lp_channel10_status != value) {
-    __oe_lp_channel10_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel11_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel11_status;
-  if (__oe_lp_channel11_status != value) {
-    __oe_lp_channel11_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel12_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel12_status;
-  if (__oe_lp_channel12_status != value) {
-    __oe_lp_channel12_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel13_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel13_status;
-  if (__oe_lp_channel13_status != value) {
-    __oe_lp_channel13_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
-    }
-  }
-}
-void canzero_set_lp_channel14_status(pdu_channel_status value) {
-  extern pdu_channel_status __oe_lp_channel14_status;
-  if (__oe_lp_channel14_status != value) {
-    __oe_lp_channel14_status = value;
-    uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
-      scheduler_promote_job(&channel_status_interval_job);
     }
   }
 }
@@ -1448,31 +1344,108 @@ void canzero_set_sdc_status(sdc_status value) {
   if (__oe_sdc_status != value) {
     __oe_sdc_status = value;
     uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
+    if (state_interval_job.climax > state_interval_job.job.stream_job.last_schedule + 0) {
+      state_interval_job.climax = state_interval_job.job.stream_job.last_schedule + 0;
+      scheduler_promote_job(&state_interval_job);
+    }
+  }
+}
+void canzero_set_assertion_fault(error_flag value) {
+  extern error_flag __oe_assertion_fault;
+  if (__oe_assertion_fault != value) {
+    __oe_assertion_fault = value;
+    uint32_t time = canzero_get_time();
+    if (errors_interval_job.climax > errors_interval_job.job.stream_job.last_schedule + 0) {
+      errors_interval_job.climax = errors_interval_job.job.stream_job.last_schedule + 0;
+      scheduler_promote_job(&errors_interval_job);
+    }
+  }
+}
+void canzero_set_levitation_boards_power_channel_status(pdu_channel_status value) {
+  extern pdu_channel_status __oe_levitation_boards_power_channel_status;
+  if (__oe_levitation_boards_power_channel_status != value) {
+    __oe_levitation_boards_power_channel_status = value;
+    uint32_t time = canzero_get_time();
+    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_job.last_schedule + 0) {
+      channel_status_interval_job.climax = channel_status_interval_job.job.stream_job.last_schedule + 0;
       scheduler_promote_job(&channel_status_interval_job);
     }
   }
 }
-void canzero_set_error_mcu_over_temperature(error_flag value) {
-  extern error_flag __oe_error_mcu_over_temperature;
-  if (__oe_error_mcu_over_temperature != value) {
-    __oe_error_mcu_over_temperature = value;
+void canzero_set_guidance_boards_power_channel_status(pdu_channel_status value) {
+  extern pdu_channel_status __oe_guidance_boards_power_channel_status;
+  if (__oe_guidance_boards_power_channel_status != value) {
+    __oe_guidance_boards_power_channel_status = value;
     uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
+    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_job.last_schedule + 0) {
+      channel_status_interval_job.climax = channel_status_interval_job.job.stream_job.last_schedule + 0;
       scheduler_promote_job(&channel_status_interval_job);
     }
   }
 }
-void canzero_set_warn_mcu_over_temperature(error_flag value) {
-  extern error_flag __oe_warn_mcu_over_temperature;
-  if (__oe_warn_mcu_over_temperature != value) {
-    __oe_warn_mcu_over_temperature = value;
+void canzero_set_motor_driver_power_channel_status(pdu_channel_status value) {
+  extern pdu_channel_status __oe_motor_driver_power_channel_status;
+  if (__oe_motor_driver_power_channel_status != value) {
+    __oe_motor_driver_power_channel_status = value;
     uint32_t time = canzero_get_time();
-    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_interval_job.last_schedule + 0) {
-      channel_status_interval_job.climax = channel_status_interval_job.job.stream_interval_job.last_schedule + 0;
+    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_job.last_schedule + 0) {
+      channel_status_interval_job.climax = channel_status_interval_job.job.stream_job.last_schedule + 0;
       scheduler_promote_job(&channel_status_interval_job);
+    }
+  }
+}
+void canzero_set_input_board_power_channel_status(pdu_channel_status value) {
+  extern pdu_channel_status __oe_input_board_power_channel_status;
+  if (__oe_input_board_power_channel_status != value) {
+    __oe_input_board_power_channel_status = value;
+    uint32_t time = canzero_get_time();
+    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_job.last_schedule + 0) {
+      channel_status_interval_job.climax = channel_status_interval_job.job.stream_job.last_schedule + 0;
+      scheduler_promote_job(&channel_status_interval_job);
+    }
+  }
+}
+void canzero_set_raspberry_pi_power_channel_status(pdu_channel_status value) {
+  extern pdu_channel_status __oe_raspberry_pi_power_channel_status;
+  if (__oe_raspberry_pi_power_channel_status != value) {
+    __oe_raspberry_pi_power_channel_status = value;
+    uint32_t time = canzero_get_time();
+    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_job.last_schedule + 0) {
+      channel_status_interval_job.climax = channel_status_interval_job.job.stream_job.last_schedule + 0;
+      scheduler_promote_job(&channel_status_interval_job);
+    }
+  }
+}
+void canzero_set_antenna_power_channel_status(float value) {
+  extern float __oe_antenna_power_channel_status;
+  if (__oe_antenna_power_channel_status != value) {
+    __oe_antenna_power_channel_status = value;
+    uint32_t time = canzero_get_time();
+    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_job.last_schedule + 0) {
+      channel_status_interval_job.climax = channel_status_interval_job.job.stream_job.last_schedule + 0;
+      scheduler_promote_job(&channel_status_interval_job);
+    }
+  }
+}
+void canzero_set_led_board_power_channel_status(pdu_channel_status value) {
+  extern pdu_channel_status __oe_led_board_power_channel_status;
+  if (__oe_led_board_power_channel_status != value) {
+    __oe_led_board_power_channel_status = value;
+    uint32_t time = canzero_get_time();
+    if (channel_status_interval_job.climax > channel_status_interval_job.job.stream_job.last_schedule + 0) {
+      channel_status_interval_job.climax = channel_status_interval_job.job.stream_job.last_schedule + 0;
+      scheduler_promote_job(&channel_status_interval_job);
+    }
+  }
+}
+void canzero_set_error_level_mcu_temperature(error_level value) {
+  extern error_level __oe_error_level_mcu_temperature;
+  if (__oe_error_level_mcu_temperature != value) {
+    __oe_error_level_mcu_temperature = value;
+    uint32_t time = canzero_get_time();
+    if (errors_interval_job.climax > errors_interval_job.job.stream_job.last_schedule + 0) {
+      errors_interval_job.climax = errors_interval_job.job.stream_job.last_schedule + 0;
+      scheduler_promote_job(&errors_interval_job);
     }
   }
 }

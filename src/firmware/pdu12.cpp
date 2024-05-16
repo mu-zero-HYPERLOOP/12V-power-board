@@ -1,10 +1,12 @@
 #include "pdu12.hpp"
+#include "core_pins.h"
 #include "util/metrics.h"
 #include <InternalTemperature.h>
+#include <algorithm>
 
-Current pdu12::m_currents[CHANNEL_COUNT];
-bool pdu12::m_shorts[CHANNEL_COUNT];
-bool pdu12::m_ctrl[CHANNEL_COUNT];
+std::array<Current, CHANNEL_COUNT> pdu12::m_currents;
+std::array<bool, CHANNEL_COUNT> pdu12::m_shorts;
+std::array<bool, CHANNEL_COUNT> pdu12::m_ctrl;
 
 void pdu12::begin() {
   // initalize adc and shit
@@ -13,178 +15,102 @@ void pdu12::begin() {
     m_currents[i] = 0_A;
     m_ctrl[i] = false;
   }
+  analogReadResolution(12);
 }
 
 void pdu12::update() {
   // channel1
   {
-    uint16_t avalue = analogRead(CHANNEL1_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_2_23_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp1] = 0_A;
-      m_shorts[lp1] = true;
-    } else {
-      m_currents[lp1] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp1] = false;
-    }
+    m_currents[lp_2_23] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL2_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_3_22_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp2] = 0_A;
-      m_shorts[lp2] = true;
-    } else {
-      m_currents[lp2] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp2] = false;
-    }
+    m_currents[lp_3_22] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL3_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_4_21_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp3] = 0_A;
-      m_shorts[lp3] = true;
-    } else {
-      m_currents[lp3] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp3] = false;
-    }
+    m_currents[lp_4_21] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL4_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_5_20_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp4] = 0_A;
-      m_shorts[lp4] = true;
-    } else {
-      m_currents[lp4] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp4] = false;
-    }
+    m_currents[lp_5_20] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL5_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_6_19_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp5] = 0_A;
-      m_shorts[lp5] = true;
-    } else {
-      m_currents[lp5] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp5] = false;
-    }
+    m_currents[lp_6_19] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL6_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_7_18_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp6] = 0_A;
-      m_shorts[lp6] = true;
-    } else {
-      m_currents[lp6] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp6] = false;
-    }
+    m_currents[lp_7_18] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL7_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_8_17_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp7] = 0_A;
-      m_shorts[lp7] = true;
-    } else {
-      m_currents[lp7] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp7] = false;
-    }
+    m_currents[lp_8_17] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL8_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_9_16_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp8] = 0_A;
-      m_shorts[lp8] = true;
-    } else {
-      m_currents[lp8] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp8] = false;
-    }
+    m_currents[lp_9_16] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL9_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_10_15_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp9] = 0_A;
-      m_shorts[lp9] = true;
-    } else {
-      m_currents[lp9] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp9] = false;
-    }
+    m_currents[lp_10_15] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL10_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_11_14_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp10] = 0_A;
-      m_shorts[lp10] = true;
-    } else {
-      m_currents[lp10] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp10] = false;
-    }
+    m_currents[lp_11_14] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL11_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_12_41_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp11] = 0_A;
-      m_shorts[lp11] = true;
-    } else {
-      m_currents[lp11] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp11] = false;
-    }
+    m_currents[lp_12_41] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL12_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_24_40_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp12] = 0_A;
-      m_shorts[lp12] = true;
-    } else {
-      m_currents[lp12] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp12] = false;
-    }
+    m_currents[lp_24_40] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL13_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_25_39_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp13] = 0_A;
-      m_shorts[lp13] = true;
-    } else {
-      m_currents[lp13] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp13] = false;
-    }
+    m_currents[lp_25_39] = (v * K_ILIS) / R_MEAS;
   }
   {
-    uint16_t avalue = analogRead(CHANNEL14_SENSE_PIN);
+    uint16_t avalue = analogRead(CHANNEL_26_38_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
-    if (v > SHORT_CIRCUIT_THRESH) {
-      m_currents[lp14] = 0_A;
-      m_shorts[lp14] = true;
-    } else {
-      m_currents[lp14] = (v * K_ILIS) / R_MEAS;
-      m_shorts[lp14] = false;
+    m_currents[lp_26_38] = (v * K_ILIS) / R_MEAS;
+  }
+  digitalWrite(CHANNEL_2_23_CTRL_PIN, m_ctrl[lp_2_23]);
+  digitalWrite(CHANNEL_3_22_CTRL_PIN, m_ctrl[lp_3_22]);
+  digitalWrite(CHANNEL_4_21_CTRL_PIN, m_ctrl[lp_4_21]);
+  digitalWrite(CHANNEL_5_20_CTRL_PIN, m_ctrl[lp_5_20]);
+  digitalWrite(CHANNEL_6_19_CTRL_PIN, m_ctrl[lp_6_19]);
+  digitalWrite(CHANNEL_7_18_CTRL_PIN, m_ctrl[lp_7_18]);
+  digitalWrite(CHANNEL_8_17_CTRL_PIN, m_ctrl[lp_8_17]);
+  digitalWrite(CHANNEL_6_16_CTRL_PIN, m_ctrl[lp_9_16]);
+  digitalWrite(CHANNEL_10_15_CTRL_PIN, m_ctrl[lp_10_15]);
+  digitalWrite(CHANNEL_11_14_CTRL_PIN, m_ctrl[lp_11_14]);
+  digitalWrite(CHANNEL_12_41_CTRL_PIN, m_ctrl[lp_12_41]);
+  digitalWrite(CHANNEL_24_40_CTRL_PIN, m_ctrl[lp_24_40]);
+  digitalWrite(CHANNEL_25_39_CTRL_PIN, m_ctrl[lp_25_39]);
+  digitalWrite(CHANNEL_26_38_CTRL_PIN, m_ctrl[lp_26_38]);
+
+  for (unsigned int channel = 0; channel < CHANNEL_COUNT; ++channel) {
+    m_shorts[channel] = m_currents[channel] >= SHORT_CIRCUIT_THRESH;
+    if (m_shorts[channel]) {
+      m_currents[channel] = 0_A;
     }
   }
-  digitalWrite(CHANNEL1_CTRL_PIN, m_ctrl[lp1] && !m_shorts[lp1]);
-  digitalWrite(CHANNEL2_CTRL_PIN, m_ctrl[lp2] && !m_shorts[lp2]);
-  digitalWrite(CHANNEL3_CTRL_PIN, m_ctrl[lp3] && !m_shorts[lp3]);
-  digitalWrite(CHANNEL4_CTRL_PIN, m_ctrl[lp4] && !m_shorts[lp4]);
-  digitalWrite(CHANNEL5_CTRL_PIN, m_ctrl[lp5] && !m_shorts[lp5]);
-  digitalWrite(CHANNEL6_CTRL_PIN, m_ctrl[lp6] && !m_shorts[lp6]);
-  digitalWrite(CHANNEL7_CTRL_PIN, m_ctrl[lp7] && !m_shorts[lp7]);
-  digitalWrite(CHANNEL8_CTRL_PIN, m_ctrl[lp8] && !m_shorts[lp8]);
-  digitalWrite(CHANNEL9_CTRL_PIN, m_ctrl[lp9] && !m_shorts[lp9]);
-  digitalWrite(CHANNEL10_CTRL_PIN, m_ctrl[lp10] && !m_shorts[lp10]);
-  digitalWrite(CHANNEL11_CTRL_PIN, m_ctrl[lp11] && !m_shorts[lp11]);
-  digitalWrite(CHANNEL12_CTRL_PIN, m_ctrl[lp12] && !m_shorts[lp12]);
-  digitalWrite(CHANNEL13_CTRL_PIN, m_ctrl[lp13] && !m_shorts[lp13]);
-  digitalWrite(CHANNEL14_CTRL_PIN, m_ctrl[lp14] && !m_shorts[lp14]);
 }
 
 Current pdu12::sense(pdu12_channel channel) { return m_currents[channel]; }
@@ -207,4 +133,8 @@ Temperature pdu12::read_mcu_temperature() {
   float temp = InternalTemperature.readTemperatureC();
   float temp_kelvin = temp - 273.15f;
   return Temperature(temp_kelvin);
+}
+
+bool pdu12::any_short() {
+  return std::any_of(m_shorts.begin(), m_shorts.end(), [](auto x) { return x; });
 }
