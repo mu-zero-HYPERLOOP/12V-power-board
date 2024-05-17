@@ -43,7 +43,7 @@ error_level __oe_error_level_mcu_temperature;
 error_level_config __oe_error_level_config_mcu_temperature;
 static void canzero_serialize_canzero_message_get_resp(canzero_message_get_resp* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
-  frame->id = 0x9E;
+  frame->id = 0xBE;
   frame->dlc = 8;
   ((uint32_t*)data)[0] = (uint8_t)(msg->m_header.m_sof & (0xFF >> (8 - 1)));
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_eof & (0xFF >> (8 - 1))) << 1;
@@ -55,7 +55,7 @@ static void canzero_serialize_canzero_message_get_resp(canzero_message_get_resp*
 }
 static void canzero_serialize_canzero_message_set_resp(canzero_message_set_resp* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
-  frame->id = 0xBE;
+  frame->id = 0xDE;
   frame->dlc = 4;
   ((uint32_t*)data)[0] = (uint16_t)(msg->m_header.m_od_index & (0xFFFF >> (16 - 13)));
   ((uint32_t*)data)[0] |= msg->m_header.m_client_id << 13;
@@ -64,14 +64,14 @@ static void canzero_serialize_canzero_message_set_resp(canzero_message_set_resp*
 }
 static void canzero_serialize_canzero_message_power_board12_stream_state(canzero_message_power_board12_stream_state* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
-  frame->id = 0x63;
+  frame->id = 0x8C;
   frame->dlc = 1;
   ((uint32_t*)data)[0] = (uint8_t)(msg->m_state & (0xFF >> (8 - 1)));
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_sdc_status & (0xFF >> (8 - 1))) << 1;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_temperature(canzero_message_power_board12_stream_temperature* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
-  frame->id = 0x6B;
+  frame->id = 0x51;
   frame->dlc = 1;
   uint32_t mcu_temperature_0 = (msg->m_mcu_temperature - -1) / 0.592156862745098;
   if (mcu_temperature_0 > 0xFF) {
@@ -81,14 +81,14 @@ static void canzero_serialize_canzero_message_power_board12_stream_temperature(c
 }
 static void canzero_serialize_canzero_message_power_board12_stream_errors(canzero_message_power_board12_stream_errors* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
-  frame->id = 0x4B;
+  frame->id = 0x92;
   frame->dlc = 1;
   ((uint32_t*)data)[0] = (uint8_t)(msg->m_assertion_fault & (0xFF >> (8 - 1)));
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_error_level_mcu_temperature & (0xFF >> (8 - 2))) << 1;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_channel_status(canzero_message_power_board12_stream_channel_status* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
-  frame->id = 0x6C;
+  frame->id = 0x72;
   frame->dlc = 4;
   ((uint32_t*)data)[0] = (uint8_t)(msg->m_levitation_boards_power_channel_status & (0xFF >> (8 - 2)));
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_guidance_boards_power_channel_status & (0xFF >> (8 - 2))) << 2;
@@ -104,7 +104,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_statu
 }
 static void canzero_serialize_canzero_message_power_board12_stream_channel_currents1(canzero_message_power_board12_stream_channel_currents1* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
-  frame->id = 0x6D;
+  frame->id = 0x93;
   frame->dlc = 8;
   uint32_t levitation_boards_power_channel_current_0 = (msg->m_levitation_boards_power_channel_current - 0) / 0.00007629510948348211;
   if (levitation_boards_power_channel_current_0 > 0xFFFF) {
@@ -129,7 +129,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_curre
 }
 static void canzero_serialize_canzero_message_power_board12_stream_channel_currents2(canzero_message_power_board12_stream_channel_currents2* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
-  frame->id = 0x4C;
+  frame->id = 0x52;
   frame->dlc = 5;
   uint32_t raspberry_pi_power_channel_current_0 = (msg->m_raspberry_pi_power_channel_current - 0) / 0.00007629510948348211;
   if (raspberry_pi_power_channel_current_0 > 0xFFFF) {
@@ -147,11 +147,21 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_curre
   }
   ((uint32_t*)data)[1] = led_board_power_channel_current_32;
 }
-static void canzero_serialize_canzero_message_heartbeat(canzero_message_heartbeat* msg, canzero_frame* frame) {
+static void canzero_serialize_canzero_message_heartbeat_can0(canzero_message_heartbeat_can0* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
-  frame->id = 0xDF;
-  frame->dlc = 1;
+  frame->id = 0xEA;
+  frame->dlc = 2;
   ((uint32_t*)data)[0] = (uint8_t)(msg->m_node_id & (0xFF >> (8 - 4)));
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 4;
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_ticks_next & (0xFF >> (8 - 7))) << 5;
+}
+static void canzero_serialize_canzero_message_heartbeat_can1(canzero_message_heartbeat_can1* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  frame->id = 0xE9;
+  frame->dlc = 2;
+  ((uint32_t*)data)[0] = (uint8_t)(msg->m_node_id & (0xFF >> (8 - 4)));
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 4;
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_ticks_next & (0xFF >> (8 - 7))) << 5;
 }
 static void canzero_deserialize_canzero_message_get_req(canzero_frame* frame, canzero_message_get_req* msg) {
   uint8_t* data = frame->data;
@@ -169,12 +179,20 @@ static void canzero_deserialize_canzero_message_set_req(canzero_frame* frame, ca
   msg->m_header.m_server_id = ((((uint32_t*)data)[0] >> 24) & (0xFFFFFFFF >> (32 - 8)));
   msg->m_data = (((uint32_t*)data)[1] & (0xFFFFFFFF >> (32 - 32)));
 }
-static void canzero_deserialize_canzero_message_heartbeat(canzero_frame* frame, canzero_message_heartbeat* msg) {
+static void canzero_deserialize_canzero_message_heartbeat_can0(canzero_frame* frame, canzero_message_heartbeat_can0* msg) {
   uint8_t* data = frame->data;
   msg->m_node_id = (node_id)(((uint32_t*)data)[0] & (0xFFFFFFFF >> (32 - 4)));
+  msg->m_unregister = ((((uint32_t*)data)[0] >> 4) & (0xFFFFFFFF >> (32 - 1)));
+  msg->m_ticks_next = ((((uint32_t*)data)[0] >> 5) & (0xFFFFFFFF >> (32 - 7)));
 }
-
-__attribute__((weak)) void canzero_wdg_timeout(uint8_t node_id) {}
+static void canzero_deserialize_canzero_message_heartbeat_can1(canzero_frame* frame, canzero_message_heartbeat_can1* msg) {
+  uint8_t* data = frame->data;
+  msg->m_node_id = (node_id)(((uint32_t*)data)[0] & (0xFFFFFFFF >> (32 - 4)));
+  msg->m_unregister = ((((uint32_t*)data)[0] >> 4) & (0xFFFFFFFF >> (32 - 1)));
+  msg->m_ticks_next = ((((uint32_t*)data)[0] >> 5) & (0xFFFFFFFF >> (32 - 7)));
+}
+__attribute__((weak)) void canzero_can0_wdg_timeout(uint8_t node_id) {}
+__attribute__((weak)) void canzero_can1_wdg_timeout(uint8_t node_id) {}
 
 typedef enum {
   HEARTBEAT_JOB_TAG = 0,
@@ -198,10 +216,15 @@ typedef struct {
 
 #define MAX_DYN_HEARTBEATS 10
 typedef struct {
-  unsigned int static_wdg_armed[node_id_count];
-  unsigned int static_tick_counters[node_id_count];
-  unsigned int dynamic_wdg_armed[MAX_DYN_HEARTBEATS];
-  unsigned int dynamic_tick_counters[MAX_DYN_HEARTBEATS];
+  unsigned int can0_static_wdg_armed[node_id_count];
+  int can0_static_tick_countdowns[node_id_count];
+  unsigned int can0_dynamic_wdg_armed[MAX_DYN_HEARTBEATS];
+  int can0_dynamic_tick_countdowns[MAX_DYN_HEARTBEATS];
+
+  unsigned int can1_static_wdg_armed[node_id_count];
+  int can1_static_tick_countdowns[node_id_count];
+  unsigned int can1_dynamic_wdg_armed[MAX_DYN_HEARTBEATS];
+  int can1_dynamic_tick_countdowns[MAX_DYN_HEARTBEATS];
 } heartbeat_wdg_job_t;
 
 typedef struct {
@@ -344,12 +367,16 @@ static void schedule_heartbeat_wdg_job() {
   heartbeat_wdg_job.climax = canzero_get_time() + 100;
   heartbeat_wdg_job.tag = HEARTBEAT_WDG_JOB_TAG;
   for (unsigned int i = 0; i < node_id_count; ++i) {
-    heartbeat_wdg_job.job.wdg_job.static_tick_counters[i] = 0;
-    heartbeat_wdg_job.job.wdg_job.static_wdg_armed[i] = 0;
+    heartbeat_wdg_job.job.wdg_job.can0_static_tick_countdowns[i] = 4;
+    heartbeat_wdg_job.job.wdg_job.can0_static_wdg_armed[i] = 0;
+    heartbeat_wdg_job.job.wdg_job.can1_static_tick_countdowns[i] = 4;
+    heartbeat_wdg_job.job.wdg_job.can1_static_wdg_armed[i] = 0;
   }
   for (unsigned int i = 0; i < MAX_DYN_HEARTBEATS; ++i) {
-    heartbeat_wdg_job.job.wdg_job.dynamic_tick_counters[i] = 0;
-    heartbeat_wdg_job.job.wdg_job.dynamic_wdg_armed[i] = 0;
+    heartbeat_wdg_job.job.wdg_job.can0_dynamic_tick_countdowns[i] = 4;
+    heartbeat_wdg_job.job.wdg_job.can0_dynamic_wdg_armed[i] = 0;
+    heartbeat_wdg_job.job.wdg_job.can1_dynamic_tick_countdowns[i] = 4;
+    heartbeat_wdg_job.job.wdg_job.can1_dynamic_wdg_armed[i] = 0;
   }
   scheduler_schedule(&heartbeat_wdg_job);
 }
@@ -489,7 +516,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_input_board_power_channel_current = __oe_input_board_power_channel_current;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_channel_currents1(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
       case 5: {
@@ -502,7 +529,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_led_board_power_channel_current = __oe_led_board_power_channel_current;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_channel_currents2(&stream_message, &stream_frame);
-        canzero_can0_send(&stream_frame);
+        canzero_can1_send(&stream_frame);
         break;
       }
         default:
@@ -514,32 +541,50 @@ static void schedule_jobs(uint32_t time) {
       case HEARTBEAT_JOB_TAG: {
         scheduler_reschedule(time + heartbeat_interval);
         canzero_exit_critical();
-        canzero_message_heartbeat heartbeat;
-        heartbeat.m_node_id = node_id_power_board12;
         canzero_frame heartbeat_frame;
-        canzero_serialize_canzero_message_heartbeat(&heartbeat, &heartbeat_frame);
+        canzero_message_heartbeat_can0 heartbeat_can0;
+        heartbeat_can0.m_node_id = node_id_power_board12;
+        heartbeat_can0.m_unregister = 0;
+        heartbeat_can0.m_ticks_next = 4;
+        canzero_serialize_canzero_message_heartbeat_can0(&heartbeat_can0, &heartbeat_frame);
         canzero_can0_send(&heartbeat_frame);
+        canzero_message_heartbeat_can1 heartbeat_can1;
+        heartbeat_can1.m_node_id = node_id_power_board12;
+        heartbeat_can1.m_unregister = 0;
+        heartbeat_can1.m_ticks_next = 4;
+        canzero_serialize_canzero_message_heartbeat_can1(&heartbeat_can1, &heartbeat_frame);
+        canzero_can1_send(&heartbeat_frame);
         break;
       }
       case HEARTBEAT_WDG_JOB_TAG: {
         scheduler_reschedule(time + heartbeat_wdg_tick_duration);
         canzero_exit_critical();
         for (unsigned int i = 0; i < node_id_count; ++i) {
-          heartbeat_wdg_job.job.wdg_job.static_tick_counters[i] 
-            += heartbeat_wdg_job.job.wdg_job.static_wdg_armed[i];
+          heartbeat_wdg_job.job.wdg_job.can0_static_tick_countdowns[i] 
+            -= heartbeat_wdg_job.job.wdg_job.can0_static_wdg_armed[i];
+          heartbeat_wdg_job.job.wdg_job.can1_static_tick_countdowns[i] 
+            -= heartbeat_wdg_job.job.wdg_job.can1_static_wdg_armed[i];
         }
         for (unsigned int i = 0; i < MAX_DYN_HEARTBEATS; ++i) {
-          heartbeat_wdg_job.job.wdg_job.dynamic_tick_counters[i] 
-            += heartbeat_wdg_job.job.wdg_job.dynamic_wdg_armed[i];
+          heartbeat_wdg_job.job.wdg_job.can0_dynamic_tick_countdowns[i] 
+            -= heartbeat_wdg_job.job.wdg_job.can0_dynamic_wdg_armed[i];
+          heartbeat_wdg_job.job.wdg_job.can1_dynamic_tick_countdowns[i] 
+            -= heartbeat_wdg_job.job.wdg_job.can1_dynamic_wdg_armed[i];
         }
         for (unsigned int i = 0; i < node_id_count; ++i) {
-          if (heartbeat_wdg_job.job.wdg_job.static_tick_counters[i] >= 4) {
-            canzero_wdg_timeout(i);
+          if (heartbeat_wdg_job.job.wdg_job.can0_static_tick_countdowns[i] <= 0) {
+            canzero_can0_wdg_timeout(i);
+          }
+          if (heartbeat_wdg_job.job.wdg_job.can1_static_tick_countdowns[i] <= 0) {
+            canzero_can1_wdg_timeout(i);
           }
         }
         for (unsigned int i = 0; i < MAX_DYN_HEARTBEATS; ++i) {
-          if (heartbeat_wdg_job.job.wdg_job.dynamic_tick_counters[i] >= 4) {
-            canzero_wdg_timeout(node_id_count + i);
+          if (heartbeat_wdg_job.job.wdg_job.can0_dynamic_tick_countdowns[i] <= 0) {
+            canzero_can0_wdg_timeout(node_id_count + i);
+          }
+          if (heartbeat_wdg_job.job.wdg_job.can1_dynamic_tick_countdowns[i] <= 0) {
+            canzero_can1_wdg_timeout(node_id_count + i);
           }
         }
         break;
@@ -564,7 +609,7 @@ static void schedule_jobs(uint32_t time) {
         canzero_exit_critical();
         canzero_frame fragmentation_frame;
         canzero_serialize_canzero_message_get_resp(&fragmentation_response, &fragmentation_frame);
-        canzero_can1_send(&fragmentation_frame);
+        canzero_can0_send(&fragmentation_frame);
         break;
       }
       default: {
@@ -862,7 +907,7 @@ static void canzero_handle_get_req(canzero_frame* frame) {
   resp.m_header.m_server_id = msg.m_header.m_server_id;
   canzero_frame resp_frame;
   canzero_serialize_canzero_message_get_resp(&resp, &resp_frame);
-  canzero_can1_send(&resp_frame);
+  canzero_can0_send(&resp_frame);
 }
 static uint32_t config_hash_tmp_tx_fragmentation_buffer[2];
 static uint32_t config_hash_tmp_tx_fragmentation_offset = 0;
@@ -1220,22 +1265,56 @@ static void canzero_handle_set_req(canzero_frame* frame) {
   resp.m_header.m_erno = set_resp_erno_Success;
   canzero_frame resp_frame;
   canzero_serialize_canzero_message_set_resp(&resp, &resp_frame);
-  canzero_can1_send(&resp_frame);
+  canzero_can0_send(&resp_frame);
 
 }
-__attribute__((weak)) void canzero_handle_heartbeat(canzero_frame* frame) {
-  canzero_message_heartbeat msg;
-  canzero_deserialize_canzero_message_heartbeat(frame, &msg);
+static void canzero_handle_heartbeat_can0(canzero_frame* frame) {
+  canzero_message_heartbeat_can0 msg;
+  canzero_deserialize_canzero_message_heartbeat_can0(frame, &msg);
+
+  if (msg.m_node_id < node_id_count) {
+    heartbeat_wdg_job.job.wdg_job.can0_static_wdg_armed[msg.m_node_id] 
+      = (~msg.m_unregister) & 0b1;
+    heartbeat_wdg_job.job.wdg_job.can1_static_wdg_armed[msg.m_node_id] 
+      = (~msg.m_unregister) & 0b1;
+    heartbeat_wdg_job.job.wdg_job.can0_static_tick_countdowns[msg.m_node_id] = msg.m_ticks_next;
+  } else {
+    heartbeat_wdg_job.job.wdg_job.can0_dynamic_wdg_armed[msg.m_node_id - node_id_count] 
+      = (~msg.m_unregister) & 0b1;
+    heartbeat_wdg_job.job.wdg_job.can1_dynamic_wdg_armed[msg.m_node_id - node_id_count] 
+      = (~msg.m_unregister) & 0b1;
+    heartbeat_wdg_job.job.wdg_job.can0_dynamic_tick_countdowns[msg.m_node_id - node_id_count]
+      = msg.m_ticks_next;
+  }
+}
+static void canzero_handle_heartbeat_can1(canzero_frame* frame) {
+  canzero_message_heartbeat_can1 msg;
+  canzero_deserialize_canzero_message_heartbeat_can1(frame, &msg);
+
+  if (msg.m_node_id < node_id_count) {
+    heartbeat_wdg_job.job.wdg_job.can0_static_wdg_armed[msg.m_node_id] 
+      = (~msg.m_unregister) & 0b1;
+    heartbeat_wdg_job.job.wdg_job.can1_static_wdg_armed[msg.m_node_id] 
+      = (~msg.m_unregister) & 0b1;
+    heartbeat_wdg_job.job.wdg_job.can1_static_tick_countdowns[msg.m_node_id] = msg.m_ticks_next;
+  } else {
+    heartbeat_wdg_job.job.wdg_job.can0_dynamic_wdg_armed[msg.m_node_id - node_id_count] 
+      = (~msg.m_unregister) & 0b1;
+    heartbeat_wdg_job.job.wdg_job.can1_dynamic_wdg_armed[msg.m_node_id - node_id_count] 
+      = (~msg.m_unregister) & 0b1;
+    heartbeat_wdg_job.job.wdg_job.can1_dynamic_tick_countdowns[msg.m_node_id - node_id_count]
+      = msg.m_ticks_next;
+  }
 }
 void canzero_can0_poll() {
   canzero_frame frame;
   while (canzero_can0_recv(&frame)) {
     switch (frame.id) {
-      case 0x9F:
-        canzero_handle_get_req(&frame);
-        break;
       case 0xDF:
-        canzero_handle_heartbeat(&frame);
+        canzero_handle_set_req(&frame);
+        break;
+      case 0xEA:
+        canzero_handle_heartbeat_can0(&frame);
         break;
     }
   }
@@ -1245,7 +1324,10 @@ void canzero_can1_poll() {
   while (canzero_can1_recv(&frame)) {
     switch (frame.id) {
       case 0xBF:
-        canzero_handle_set_req(&frame);
+        canzero_handle_get_req(&frame);
+        break;
+      case 0xE9:
+        canzero_handle_heartbeat_can1(&frame);
         break;
     }
   }
@@ -1305,7 +1387,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 8734496441462941762ull;
+  __oe_config_hash = 9201214571773826373ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
@@ -1320,6 +1402,7 @@ void canzero_init() {
   job_pool_allocator_init();
   scheduler.size = 0;
   schedule_heartbeat_job();
+  schedule_heartbeat_wdg_job();
   schedule_state_interval_job();
   schedule_temperature_interval_job();
   schedule_errors_interval_job();

@@ -16,7 +16,7 @@ int main() {
     channel_control();
 
     canzero_update_continue(canzero_get_time());
-    usleep(1);
+    usleep(100);
   }
 
 }

@@ -15,6 +15,8 @@ static std::mt19937 gen{rd()};
 
 static std::normal_distribution current_dist{1.0f, 0.05f};
 
+static std::normal_distribution temp_dist{30.0f, 0.5f};
+
 void pdu12::begin() {
   for (size_t i = 0; i < CHANNEL_COUNT; ++i) {
     m_shorts[i] = false;
@@ -44,7 +46,8 @@ void pdu12::control(pdu12_channel channel, bool active) {
 void pdu12::set_sdc(bool closed) { }
 
 Temperature pdu12::read_mcu_temperature() {
-  return 24_Celcius;
+  float celcius = temp_dist(gen);
+  return Temperature(celcius - 273.15);
 }
 
 bool pdu12::any_short() {
