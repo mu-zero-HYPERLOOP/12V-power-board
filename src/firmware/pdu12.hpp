@@ -4,7 +4,7 @@
 #include <cmath>
 #include <array>
 
-enum pdu12_channel {
+enum Pdu12Channel {
   lp_2_23 = 0,
   lp_3_22,
   lp_4_21,
@@ -22,7 +22,7 @@ enum pdu12_channel {
   CHANNEL_COUNT,
 };
 
-enum pdu12_channel_status {
+enum Pdu12ChannelStatus {
   OFF,
   ON,
   SHORT,
@@ -34,15 +34,11 @@ public:
 
   static void update();
 
-  static Current sense(pdu12_channel channel);
+  static Current sense(Pdu12Channel channel);
 
-  static pdu12_channel_status status(pdu12_channel channel);
+  static Pdu12ChannelStatus status(Pdu12Channel channel);
 
-  static void control(pdu12_channel channel, bool active);
-
-  static void set_sdc(bool closed);
-
-  static Temperature read_mcu_temperature();
+  static void control(Pdu12Channel channel, bool active);
 
   static bool any_short();
 

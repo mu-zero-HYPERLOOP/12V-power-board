@@ -30,7 +30,7 @@ static Interval led_board_sense_interval(DEFAULT_SENSE_FREQUENCY);
 static BoxcarFilter<Current, DEFAULT_FILTER_LENGTH>
     led_board_current_filter(0_A);
 
-static inline pdu_channel_status pdu12_status_to_canzero_status(pdu12_channel_status ch) {
+static inline pdu_channel_status pdu12_status_to_canzero_status(Pdu12ChannelStatud ch) {
   switch (ch) {
   case ON:
     return pdu_channel_status_ON;

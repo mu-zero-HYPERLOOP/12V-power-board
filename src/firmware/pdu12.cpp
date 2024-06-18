@@ -113,9 +113,9 @@ void pdu12::update() {
   }
 }
 
-Current pdu12::sense(pdu12_channel channel) { return m_currents[channel]; }
+Current pdu12::sense(Pdu12Channel channel) { return m_currents[channel]; }
 
-pdu12_channel_status pdu12::status(pdu12_channel channel) {
+Pdu12ChannelStatud pdu12::status(Pdu12Channel channel) {
   if (m_shorts[channel]) {
     return SHORT;
   } else {
@@ -123,7 +123,7 @@ pdu12_channel_status pdu12::status(pdu12_channel channel) {
   }
 }
 
-void pdu12::control(pdu12_channel channel, bool active) {
+void pdu12::control(Pdu12Channel channel, bool active) {
   m_ctrl[channel] = active;
 }
 
