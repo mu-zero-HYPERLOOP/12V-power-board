@@ -3,6 +3,7 @@
 #include "util/metrics.h"
 #include <InternalTemperature.h>
 #include <algorithm>
+#include <numeric>
 
 std::array<Current, CHANNEL_COUNT> pdu12::m_currents;
 std::array<bool, CHANNEL_COUNT> pdu12::m_shorts;
@@ -115,7 +116,7 @@ void pdu12::update() {
 
 Current pdu12::sense(Pdu12Channel channel) { return m_currents[channel]; }
 
-Pdu12ChannelStatud pdu12::status(Pdu12Channel channel) {
+Pdu12ChannelStatus pdu12::status(Pdu12Channel channel) {
   if (m_shorts[channel]) {
     return SHORT;
   } else {
@@ -127,7 +128,7 @@ void pdu12::control(Pdu12Channel channel, bool active) {
   m_ctrl[channel] = active;
 }
 
-void pdu12::set_sdc(bool closed) { digitalWrite(SDC_CTRL_PIN, closed); }
+void pdu12::set_sdc(bool close) { digitalWrite(SDC_CTRL_PIN, close); }
 
 Temperature pdu12::read_mcu_temperature() {
   float temp = InternalTemperature.readTemperatureC();
@@ -137,4 +138,9 @@ Temperature pdu12::read_mcu_temperature() {
 
 bool pdu12::any_short() {
   return std::any_of(m_shorts.begin(), m_shorts.end(), [](auto x) { return x; });
+}
+
+Power pdu12::total_power_output() {
+  return std::accumulate(m_currents.begin(), m_currents.end(), Power(0), 
+      [](Power p, Current c) { return p + Voltage(12) * c; });
 }

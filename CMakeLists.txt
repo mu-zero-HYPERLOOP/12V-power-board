@@ -18,7 +18,7 @@ add_executable(${PROJECT_NAME}
   src/channel_control.cpp
 )
 
-target_include_directories(${PROJECT_NAME} PRIVATE src/)
+target_include_directories(${PROJECT_NAME} PRIVATE src/ mock/)
 
   
 

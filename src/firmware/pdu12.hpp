@@ -40,7 +40,13 @@ public:
 
   static void control(Pdu12Channel channel, bool active);
 
+  static void set_sdc(bool close);
+
   static bool any_short();
+
+  static Temperature read_mcu_temperature();
+
+  static Power total_power_output();
 
 private:
   static constexpr int CHANNEL_2_23_SENSE_PIN = 23;

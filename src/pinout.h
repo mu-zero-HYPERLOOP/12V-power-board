@@ -14,4 +14,6 @@ constexpr Pdu12Channel RASPBERRY_PI_POWER_CHANNEL = lp_7_18;
 
 constexpr Pdu12Channel ANTENNA_POWER_CHANNEL = lp_8_17;
 
+constexpr Pdu12Channel FANS_POWER_CHANNEL = lp_9_16;
+
 constexpr Pdu12Channel LED_BOARD_CHANNEL = lp_10_15;

@@ -1,4 +1,7 @@
 #include "channel_control.h"
+#include "canzero/canzero.h"
+#include "firmware/pdu12.hpp"
+#include "pinout.h"
 
 constexpr size_t DEFAULT_FILTER_LENGTH = 10;
 constexpr Frequency DEFAULT_SENSE_FREQUENCY = 1_kHz;
@@ -30,7 +33,14 @@ static Interval led_board_sense_interval(DEFAULT_SENSE_FREQUENCY);
 static BoxcarFilter<Current, DEFAULT_FILTER_LENGTH>
     led_board_current_filter(0_A);
 
-static inline pdu_channel_status pdu12_status_to_canzero_status(Pdu12ChannelStatud ch) {
+static Interval fans_sense_interval(DEFAULT_SENSE_FREQUENCY);
+static BoxcarFilter<Current, DEFAULT_FILTER_LENGTH>
+    fans_current_filter(0_A);
+
+static Interval power_sense_interval(DEFAULT_SENSE_FREQUENCY);
+static BoxcarFilter<Power, DEFAULT_FILTER_LENGTH> total_power_filter(0_W);
+
+static inline pdu_channel_status pdu12_status_to_canzero_status(Pdu12ChannelStatus ch) {
   switch (ch) {
   case ON:
     return pdu_channel_status_ON;
@@ -42,10 +52,43 @@ static inline pdu_channel_status pdu12_status_to_canzero_status(Pdu12ChannelStat
 }
 
 void channel_control() {
+  pdu_12v_command command = canzero_get_command();
+  switch (command) {
+    case pdu_12v_command_NONE:
+      break;
+    case pdu_12v_command_START:
+      pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, true);
+      pdu12::control(GUIDANCE_BOARDS_POWER_CHANNEL, true);
+      pdu12::control(MOTOR_DRIVER_POWER_CHANNEL, true);
+      pdu12::control(INPUT_BOARD_POWER_CHANNEL, true);
+      pdu12::control(RASPBERRY_PI_POWER_CHANNEL, true);
+      pdu12::control(ANTENNA_POWER_CHANNEL, true);
+      pdu12::control(FANS_POWER_CHANNEL, true);
+      pdu12::control(LED_BOARD_CHANNEL, true);
+      break;
+    case pdu_12v_command_TELEMETRY:
+      pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, false);
+      pdu12::control(GUIDANCE_BOARDS_POWER_CHANNEL, false);
+      pdu12::control(MOTOR_DRIVER_POWER_CHANNEL, false);
+      pdu12::control(INPUT_BOARD_POWER_CHANNEL, true);
+      pdu12::control(RASPBERRY_PI_POWER_CHANNEL, true);
+      pdu12::control(ANTENNA_POWER_CHANNEL, true);
+      pdu12::control(FANS_POWER_CHANNEL, true);
+      pdu12::control(LED_BOARD_CHANNEL, false);
+      break;
+    case pdu_12v_command_STOP:
+      pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, false);
+      pdu12::control(GUIDANCE_BOARDS_POWER_CHANNEL, false);
+      pdu12::control(MOTOR_DRIVER_POWER_CHANNEL, false);
+      pdu12::control(INPUT_BOARD_POWER_CHANNEL, false);
+      pdu12::control(RASPBERRY_PI_POWER_CHANNEL, false);
+      pdu12::control(ANTENNA_POWER_CHANNEL, false);
+      pdu12::control(FANS_POWER_CHANNEL, false);
+      pdu12::control(LED_BOARD_CHANNEL, false);
+      break;
+  }
+  
   // ====== LEVITATION BOARDS POWER CHANNEL ===========
-  pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL,
-                 canzero_get_levitation_boards_power_channel_ctrl() ==
-                     pdu_channel_control_ON);
   if (levitation_boards_sense_interval.next()) {
     levitation_boards_current_filter.push(
         pdu12::sense(LEVITATION_BOARDS_POWER_CHANNEL));
@@ -57,9 +100,6 @@ void channel_control() {
           pdu12::status(LEVITATION_BOARDS_POWER_CHANNEL)));
 
   // ===== GUIDANCE BOARDS POWER CHANNEL ============
-  pdu12::control(GUIDANCE_BOARDS_POWER_CHANNEL,
-                 canzero_get_guidance_boards_power_channel_ctrl() ==
-                     pdu_channel_control_ON);
   if (guidance_boards_sense_interval.next()) {
     guidance_boards_current_filter.push(
         pdu12::sense(GUIDANCE_BOARDS_POWER_CHANNEL));
@@ -71,9 +111,6 @@ void channel_control() {
           pdu12::status(GUIDANCE_BOARDS_POWER_CHANNEL)));
 
   // ===== MOTOR DRIVER POWER CHANNEL ==============
-  pdu12::control(MOTOR_DRIVER_POWER_CHANNEL,
-                 canzero_get_motor_driver_power_channel_ctrl() ==
-                     pdu_channel_control_ON);
   if (motor_driver_sense_interval.next()) {
     motor_driver_current_filter.push(pdu12::sense(MOTOR_DRIVER_POWER_CHANNEL));
     canzero_set_motor_driver_power_channel_current(
@@ -83,9 +120,6 @@ void channel_control() {
       pdu12::status(MOTOR_DRIVER_POWER_CHANNEL)));
 
   // ======= INPUT BOARD POWER CHANNEL =============
-  pdu12::control(INPUT_BOARD_POWER_CHANNEL,
-                 canzero_get_input_board_power_channel_ctrl() ==
-                     pdu_channel_control_ON);
   if (input_board_sense_interval.next()) {
     input_board_current_filter.push(pdu12::sense(INPUT_BOARD_POWER_CHANNEL));
     canzero_set_input_board_power_channel_current(
@@ -95,9 +129,6 @@ void channel_control() {
       pdu12_status_to_canzero_status(pdu12::status(INPUT_BOARD_POWER_CHANNEL)));
 
   // ======= RASPBERRY PI POWER CHANNEL ========
-  pdu12::control(RASPBERRY_PI_POWER_CHANNEL,
-                 canzero_get_raspberry_pi_power_channel_ctrl() ==
-                     pdu_channel_control_ON);
   if (raspberry_pi_sense_interval.next()) {
     raspberry_pi_current_filter.push(pdu12::sense(RASPBERRY_PI_POWER_CHANNEL));
     canzero_set_raspberry_pi_power_channel_current(
@@ -107,9 +138,6 @@ void channel_control() {
       pdu12::status(RASPBERRY_PI_POWER_CHANNEL)));
 
   // ====== ANTENNA POWER CHANNEL ==============
-  pdu12::control(ANTENNA_POWER_CHANNEL,
-                 canzero_get_antenna_power_channel_ctrl() ==
-                     pdu_channel_control_ON);
   if (antenna_sense_interval.next()) {
     antenna_current_filter.push(pdu12::sense(ANTENNA_POWER_CHANNEL));
     canzero_set_antenna_power_channel_current(
@@ -119,9 +147,6 @@ void channel_control() {
       pdu12_status_to_canzero_status(pdu12::status(ANTENNA_POWER_CHANNEL)));
 
   // ======= LED BOARD POWER CHANNEL ===========
-  pdu12::control(LED_BOARD_CHANNEL,
-                 canzero_get_led_board_power_channel_ctrl() ==
-                     pdu_channel_control_ON);
   if (led_board_sense_interval.next()) {
     led_board_current_filter.push(pdu12::sense(LED_BOARD_CHANNEL));
     canzero_set_led_board_power_channel_current(
@@ -129,5 +154,21 @@ void channel_control() {
   }
   canzero_set_led_board_power_channel_status(
       pdu12_status_to_canzero_status(pdu12::status(LED_BOARD_CHANNEL)));
+
+  // ======= COOLING FANS POWER CHANNEL ===========
+  if (fans_sense_interval.next()) {
+    fans_current_filter.push(pdu12::sense(FANS_POWER_CHANNEL));
+    canzero_set_fans_power_channel_current(
+        static_cast<float>(fans_current_filter.get()));
+  }
+  canzero_set_fans_power_channel_status(
+      pdu12_status_to_canzero_status(pdu12::status(FANS_POWER_CHANNEL)));
+
+  if (power_sense_interval.next()) {
+    total_power_filter.push(pdu12::total_power_output());
+    canzero_set_total_power(static_cast<float>(total_power_filter.get()));
+
+  }
+
 }
 
