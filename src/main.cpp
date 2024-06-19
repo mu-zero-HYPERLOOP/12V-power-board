@@ -27,7 +27,7 @@ int main() {
 
   pdu12::begin();
 
-  canzero_set_state(pdu_12v_state_CHANNELS_OFF);
+  canzero_set_state(pdu_12v_state_CHANNELS_TELEMETRY);
   while (true) {
 
     canzero_can0_poll();
