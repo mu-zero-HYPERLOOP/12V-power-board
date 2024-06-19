@@ -39,6 +39,7 @@ int main() {
     // =========== SDC CTRL =========
     bool any_short = pdu12::any_short();
     pdu12::set_sdc(!any_short);
+    canzero_set_error_any_short(any_short ? error_flag_ERROR : error_flag_OK);
     canzero_set_sdc_status(any_short ? sdc_status_OPEN : sdc_status_CLOSED);
 
     // ======== MCU TEMPERATURE ========

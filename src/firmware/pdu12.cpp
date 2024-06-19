@@ -1,4 +1,5 @@
 #include "pdu12.hpp"
+#include "canzero/canzero.h"
 #include "core_pins.h"
 #include "util/metrics.h"
 #include <InternalTemperature.h>

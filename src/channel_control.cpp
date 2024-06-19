@@ -167,7 +167,6 @@ void channel_control() {
   if (power_sense_interval.next()) {
     total_power_filter.push(pdu12::total_power_output());
     canzero_set_total_power(static_cast<float>(total_power_filter.get()));
-
   }
 
 }
