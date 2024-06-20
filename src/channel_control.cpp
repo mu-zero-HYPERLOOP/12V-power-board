@@ -51,8 +51,9 @@ static inline pdu_channel_status pdu12_status_to_canzero_status(Pdu12ChannelStat
   }
 }
 
-void channel_control() {
+pdu_12v_state channel_control() {
   pdu_12v_command command = canzero_get_command();
+  pdu_12v_state next_state = canzero_get_state();
   switch (command) {
     case pdu_12v_command_NONE:
       break;
@@ -65,6 +66,7 @@ void channel_control() {
       pdu12::control(ANTENNA_POWER_CHANNEL, true);
       pdu12::control(FANS_POWER_CHANNEL, true);
       pdu12::control(LED_BOARD_CHANNEL, true);
+      next_state = pdu_12v_state_CHANNELS_ON;
       break;
     case pdu_12v_command_TELEMETRY:
       pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, false);
@@ -75,6 +77,7 @@ void channel_control() {
       pdu12::control(ANTENNA_POWER_CHANNEL, true);
       pdu12::control(FANS_POWER_CHANNEL, true);
       pdu12::control(LED_BOARD_CHANNEL, false);
+      next_state = pdu_12v_state_CHANNELS_TELEMETRY;
       break;
     case pdu_12v_command_STOP:
       pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, false);
@@ -85,6 +88,7 @@ void channel_control() {
       pdu12::control(ANTENNA_POWER_CHANNEL, false);
       pdu12::control(FANS_POWER_CHANNEL, false);
       pdu12::control(LED_BOARD_CHANNEL, false);
+      next_state = pdu_12v_state_CHANNELS_OFF;
       break;
   }
   
@@ -169,5 +173,6 @@ void channel_control() {
     canzero_set_total_power(static_cast<float>(total_power_filter.get()));
   }
 
+  return next_state;
 }
 

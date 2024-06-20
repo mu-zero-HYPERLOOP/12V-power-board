@@ -7,8 +7,8 @@
 #include "util/boxcar.h"
 #include "util/interval.h"
 #include "util/timing.h"
-#include <FlexCAN_T4.h>
 #include <cassert>
+#include <cstdio>
 
 static IntervalTiming main_loop_interval_timer;
 
@@ -27,14 +27,19 @@ int main() {
 
   pdu12::begin();
 
-  canzero_set_state(pdu_12v_state_CHANNELS_TELEMETRY);
+  canzero_set_state(pdu_12v_state_CHANNELS_OFF);
+  pdu_12v_state next_state = pdu_12v_state_CHANNELS_OFF;
+  canzero_set_command(pdu_12v_command_TELEMETRY);
+  printf("%d\n", canzero_get_state());
   while (true) {
 
     canzero_can0_poll();
     canzero_can1_poll();
 
     pdu12::update();
-    channel_control();
+    canzero_set_state(next_state);
+    next_state = channel_control();
+    printf("%d\n", canzero_get_state());
 
     // =========== SDC CTRL =========
     bool any_short = pdu12::any_short();

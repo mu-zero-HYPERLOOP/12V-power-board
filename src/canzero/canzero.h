@@ -29,6 +29,12 @@ typedef struct {
   uint8_t m_client_id;
   uint8_t m_server_id;
 } set_req_header;
+typedef enum {
+  pdu_12v_command_NONE = 0,
+  pdu_12v_command_START = 1,
+  pdu_12v_command_STOP = 2,
+  pdu_12v_command_TELEMETRY = 3,
+} pdu_12v_command;
 typedef struct {
   uint8_t m_sof;
   uint8_t m_eof;
@@ -80,16 +86,6 @@ typedef struct {
   uint8_t m_min;
   uint8_t m_sec;
 } date_time;
-typedef enum {
-  pdu_12v_command_NONE = 0,
-  pdu_12v_command_START = 1,
-  pdu_12v_command_STOP = 2,
-  pdu_12v_command_TELEMETRY = 3,
-} pdu_12v_command;
-typedef enum {
-  pdu_channel_control_OFF = 0,
-  pdu_channel_control_ON = 1,
-} pdu_channel_control;
 typedef enum {
   bool_t_FALSE = 0,
   bool_t_TRUE = 1,
@@ -156,10 +152,6 @@ static inline double canzero_get_loop_frequency() {
   extern double __oe_loop_frequency;
   return __oe_loop_frequency;
 }
-static inline pdu_channel_control canzero_get_levitation_boards_power_channel_ctrl() {
-  extern pdu_channel_control __oe_levitation_boards_power_channel_ctrl;
-  return __oe_levitation_boards_power_channel_ctrl;
-}
 static inline float canzero_get_levitation_boards_power_channel_current() {
   extern float __oe_levitation_boards_power_channel_current;
   return __oe_levitation_boards_power_channel_current;
@@ -167,10 +159,6 @@ static inline float canzero_get_levitation_boards_power_channel_current() {
 static inline pdu_channel_status canzero_get_levitation_boards_power_channel_status() {
   extern pdu_channel_status __oe_levitation_boards_power_channel_status;
   return __oe_levitation_boards_power_channel_status;
-}
-static inline pdu_channel_control canzero_get_guidance_boards_power_channel_ctrl() {
-  extern pdu_channel_control __oe_guidance_boards_power_channel_ctrl;
-  return __oe_guidance_boards_power_channel_ctrl;
 }
 static inline float canzero_get_guidance_boards_power_channel_current() {
   extern float __oe_guidance_boards_power_channel_current;
@@ -180,10 +168,6 @@ static inline pdu_channel_status canzero_get_guidance_boards_power_channel_statu
   extern pdu_channel_status __oe_guidance_boards_power_channel_status;
   return __oe_guidance_boards_power_channel_status;
 }
-static inline pdu_channel_control canzero_get_motor_driver_power_channel_ctrl() {
-  extern pdu_channel_control __oe_motor_driver_power_channel_ctrl;
-  return __oe_motor_driver_power_channel_ctrl;
-}
 static inline float canzero_get_motor_driver_power_channel_current() {
   extern float __oe_motor_driver_power_channel_current;
   return __oe_motor_driver_power_channel_current;
@@ -191,10 +175,6 @@ static inline float canzero_get_motor_driver_power_channel_current() {
 static inline pdu_channel_status canzero_get_motor_driver_power_channel_status() {
   extern pdu_channel_status __oe_motor_driver_power_channel_status;
   return __oe_motor_driver_power_channel_status;
-}
-static inline pdu_channel_control canzero_get_input_board_power_channel_ctrl() {
-  extern pdu_channel_control __oe_input_board_power_channel_ctrl;
-  return __oe_input_board_power_channel_ctrl;
 }
 static inline float canzero_get_input_board_power_channel_current() {
   extern float __oe_input_board_power_channel_current;
@@ -204,10 +184,6 @@ static inline pdu_channel_status canzero_get_input_board_power_channel_status() 
   extern pdu_channel_status __oe_input_board_power_channel_status;
   return __oe_input_board_power_channel_status;
 }
-static inline pdu_channel_control canzero_get_raspberry_pi_power_channel_ctrl() {
-  extern pdu_channel_control __oe_raspberry_pi_power_channel_ctrl;
-  return __oe_raspberry_pi_power_channel_ctrl;
-}
 static inline float canzero_get_raspberry_pi_power_channel_current() {
   extern float __oe_raspberry_pi_power_channel_current;
   return __oe_raspberry_pi_power_channel_current;
@@ -215,10 +191,6 @@ static inline float canzero_get_raspberry_pi_power_channel_current() {
 static inline pdu_channel_status canzero_get_raspberry_pi_power_channel_status() {
   extern pdu_channel_status __oe_raspberry_pi_power_channel_status;
   return __oe_raspberry_pi_power_channel_status;
-}
-static inline pdu_channel_control canzero_get_antenna_power_channel_ctrl() {
-  extern pdu_channel_control __oe_antenna_power_channel_ctrl;
-  return __oe_antenna_power_channel_ctrl;
 }
 static inline float canzero_get_antenna_power_channel_current() {
   extern float __oe_antenna_power_channel_current;
@@ -228,10 +200,6 @@ static inline pdu_channel_status canzero_get_antenna_power_channel_status() {
   extern pdu_channel_status __oe_antenna_power_channel_status;
   return __oe_antenna_power_channel_status;
 }
-static inline pdu_channel_control canzero_get_led_board_power_channel_ctrl() {
-  extern pdu_channel_control __oe_led_board_power_channel_ctrl;
-  return __oe_led_board_power_channel_ctrl;
-}
 static inline float canzero_get_led_board_power_channel_current() {
   extern float __oe_led_board_power_channel_current;
   return __oe_led_board_power_channel_current;
@@ -239,10 +207,6 @@ static inline float canzero_get_led_board_power_channel_current() {
 static inline pdu_channel_status canzero_get_led_board_power_channel_status() {
   extern pdu_channel_status __oe_led_board_power_channel_status;
   return __oe_led_board_power_channel_status;
-}
-static inline pdu_channel_control canzero_get_fans_power_channel_ctrl() {
-  extern pdu_channel_control __oe_fans_power_channel_ctrl;
-  return __oe_fans_power_channel_ctrl;
 }
 static inline float canzero_get_fans_power_channel_current() {
   extern float __oe_fans_power_channel_current;
@@ -342,6 +306,10 @@ typedef struct {
   uint32_t m_data;
 } canzero_message_set_req;
 static const uint32_t canzero_message_set_req_id = 0xDE;
+typedef struct {
+  pdu_12v_command m_power_board12_command;
+} canzero_message_mother_board_stream_pdu_12v_command;
+static const uint32_t canzero_message_mother_board_stream_pdu_12v_command_id = 0x41;
 void canzero_can0_poll();
 void canzero_can1_poll();
 uint32_t canzero_update_continue(uint32_t delta_time);
@@ -372,22 +340,12 @@ static inline void canzero_set_loop_frequency(double value){
   __oe_loop_frequency = value;
 }
 
-static inline void canzero_set_levitation_boards_power_channel_ctrl(pdu_channel_control value){
-  extern pdu_channel_control __oe_levitation_boards_power_channel_ctrl;
-  __oe_levitation_boards_power_channel_ctrl = value;
-}
-
 static inline void canzero_set_levitation_boards_power_channel_current(float value){
   extern float __oe_levitation_boards_power_channel_current;
   __oe_levitation_boards_power_channel_current = value;
 }
 
 void canzero_set_levitation_boards_power_channel_status(pdu_channel_status value);
-
-static inline void canzero_set_guidance_boards_power_channel_ctrl(pdu_channel_control value){
-  extern pdu_channel_control __oe_guidance_boards_power_channel_ctrl;
-  __oe_guidance_boards_power_channel_ctrl = value;
-}
 
 static inline void canzero_set_guidance_boards_power_channel_current(float value){
   extern float __oe_guidance_boards_power_channel_current;
@@ -396,22 +354,12 @@ static inline void canzero_set_guidance_boards_power_channel_current(float value
 
 void canzero_set_guidance_boards_power_channel_status(pdu_channel_status value);
 
-static inline void canzero_set_motor_driver_power_channel_ctrl(pdu_channel_control value){
-  extern pdu_channel_control __oe_motor_driver_power_channel_ctrl;
-  __oe_motor_driver_power_channel_ctrl = value;
-}
-
 static inline void canzero_set_motor_driver_power_channel_current(float value){
   extern float __oe_motor_driver_power_channel_current;
   __oe_motor_driver_power_channel_current = value;
 }
 
 void canzero_set_motor_driver_power_channel_status(pdu_channel_status value);
-
-static inline void canzero_set_input_board_power_channel_ctrl(pdu_channel_control value){
-  extern pdu_channel_control __oe_input_board_power_channel_ctrl;
-  __oe_input_board_power_channel_ctrl = value;
-}
 
 static inline void canzero_set_input_board_power_channel_current(float value){
   extern float __oe_input_board_power_channel_current;
@@ -420,22 +368,12 @@ static inline void canzero_set_input_board_power_channel_current(float value){
 
 void canzero_set_input_board_power_channel_status(pdu_channel_status value);
 
-static inline void canzero_set_raspberry_pi_power_channel_ctrl(pdu_channel_control value){
-  extern pdu_channel_control __oe_raspberry_pi_power_channel_ctrl;
-  __oe_raspberry_pi_power_channel_ctrl = value;
-}
-
 static inline void canzero_set_raspberry_pi_power_channel_current(float value){
   extern float __oe_raspberry_pi_power_channel_current;
   __oe_raspberry_pi_power_channel_current = value;
 }
 
 void canzero_set_raspberry_pi_power_channel_status(pdu_channel_status value);
-
-static inline void canzero_set_antenna_power_channel_ctrl(pdu_channel_control value){
-  extern pdu_channel_control __oe_antenna_power_channel_ctrl;
-  __oe_antenna_power_channel_ctrl = value;
-}
 
 static inline void canzero_set_antenna_power_channel_current(float value){
   extern float __oe_antenna_power_channel_current;
@@ -444,22 +382,12 @@ static inline void canzero_set_antenna_power_channel_current(float value){
 
 void canzero_set_antenna_power_channel_status(pdu_channel_status value);
 
-static inline void canzero_set_led_board_power_channel_ctrl(pdu_channel_control value){
-  extern pdu_channel_control __oe_led_board_power_channel_ctrl;
-  __oe_led_board_power_channel_ctrl = value;
-}
-
 static inline void canzero_set_led_board_power_channel_current(float value){
   extern float __oe_led_board_power_channel_current;
   __oe_led_board_power_channel_current = value;
 }
 
 void canzero_set_led_board_power_channel_status(pdu_channel_status value);
-
-static inline void canzero_set_fans_power_channel_ctrl(pdu_channel_control value){
-  extern pdu_channel_control __oe_fans_power_channel_ctrl;
-  __oe_fans_power_channel_ctrl = value;
-}
 
 static inline void canzero_set_fans_power_channel_current(float value){
   extern float __oe_fans_power_channel_current;
@@ -504,49 +432,33 @@ void canzero_send_assertion_fault();
 
 void canzero_send_loop_frequency();
 
-void canzero_send_levitation_boards_power_channel_ctrl();
-
 void canzero_send_levitation_boards_power_channel_current();
 
 void canzero_send_levitation_boards_power_channel_status();
-
-void canzero_send_guidance_boards_power_channel_ctrl();
 
 void canzero_send_guidance_boards_power_channel_current();
 
 void canzero_send_guidance_boards_power_channel_status();
 
-void canzero_send_motor_driver_power_channel_ctrl();
-
 void canzero_send_motor_driver_power_channel_current();
 
 void canzero_send_motor_driver_power_channel_status();
-
-void canzero_send_input_board_power_channel_ctrl();
 
 void canzero_send_input_board_power_channel_current();
 
 void canzero_send_input_board_power_channel_status();
 
-void canzero_send_raspberry_pi_power_channel_ctrl();
-
 void canzero_send_raspberry_pi_power_channel_current();
 
 void canzero_send_raspberry_pi_power_channel_status();
-
-void canzero_send_antenna_power_channel_ctrl();
 
 void canzero_send_antenna_power_channel_current();
 
 void canzero_send_antenna_power_channel_status();
 
-void canzero_send_led_board_power_channel_ctrl();
-
 void canzero_send_led_board_power_channel_current();
 
 void canzero_send_led_board_power_channel_status();
-
-void canzero_send_fans_power_channel_ctrl();
 
 void canzero_send_fans_power_channel_current();
 

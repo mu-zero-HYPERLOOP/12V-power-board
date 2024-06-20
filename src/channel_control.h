@@ -6,4 +6,4 @@
 #include "util/interval.h"
 #include "canzero/canzero.h"
 
-void channel_control();
+pdu_12v_state channel_control();
