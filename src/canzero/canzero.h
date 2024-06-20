@@ -220,6 +220,10 @@ static inline error_flag canzero_get_error_any_short() {
   extern error_flag __oe_error_any_short;
   return __oe_error_any_short;
 }
+static inline error_flag canzero_get_error_heartbeat_miss() {
+  extern error_flag __oe_error_heartbeat_miss;
+  return __oe_error_heartbeat_miss;
+}
 static inline float canzero_get_mcu_temperature() {
   extern float __oe_mcu_temperature;
   return __oe_mcu_temperature;
@@ -257,6 +261,7 @@ static const uint32_t canzero_message_power_board12_stream_temperature_id = 0x8D
 typedef struct {
   error_flag m_assertion_fault;
   error_flag m_error_any_short;
+  error_flag m_error_heartbeat_miss;
   error_level m_error_level_mcu_temperature;
 } canzero_message_power_board12_stream_errors;
 static const uint32_t canzero_message_power_board12_stream_errors_id = 0x4D;
@@ -401,6 +406,8 @@ static inline void canzero_set_fans_power_channel_status(pdu_channel_status valu
 
 void canzero_set_error_any_short(error_flag value);
 
+void canzero_set_error_heartbeat_miss(error_flag value);
+
 static inline void canzero_set_mcu_temperature(float value){
   extern float __oe_mcu_temperature;
   __oe_mcu_temperature = value;
@@ -465,6 +472,8 @@ void canzero_send_fans_power_channel_current();
 void canzero_send_fans_power_channel_status();
 
 void canzero_send_error_any_short();
+
+void canzero_send_error_heartbeat_miss();
 
 void canzero_send_mcu_temperature();
 

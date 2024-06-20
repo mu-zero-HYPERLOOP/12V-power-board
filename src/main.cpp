@@ -7,6 +7,7 @@
 #include "util/boxcar.h"
 #include "util/interval.h"
 #include "util/timing.h"
+#include "error_handling.hpp"
 #include <cassert>
 #include <cstdio>
 
@@ -30,7 +31,6 @@ int main() {
   canzero_set_state(pdu_12v_state_CHANNELS_OFF);
   pdu_12v_state next_state = pdu_12v_state_CHANNELS_OFF;
   canzero_set_command(pdu_12v_command_TELEMETRY);
-  printf("%d\n", canzero_get_state());
   while (true) {
 
     canzero_can0_poll();
@@ -38,8 +38,8 @@ int main() {
 
     pdu12::update();
     canzero_set_state(next_state);
-    next_state = channel_control();
-    printf("%d\n", canzero_get_state());
+    pdu_12v_command cmd = error_handling::approve(canzero_get_command());
+    next_state = channel_control(cmd);
 
     // =========== SDC CTRL =========
     bool any_short = pdu12::any_short();

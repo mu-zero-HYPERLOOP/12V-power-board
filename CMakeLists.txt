@@ -16,6 +16,8 @@ add_executable(${PROJECT_NAME}
   mock/pdu.cpp
   src/canzero/canzero.cpp
   src/channel_control.cpp
+  mock/handle_heartbeat.cpp
+  src/error_handling.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE src/ mock/)

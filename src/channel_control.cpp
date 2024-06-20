@@ -51,10 +51,9 @@ static inline pdu_channel_status pdu12_status_to_canzero_status(Pdu12ChannelStat
   }
 }
 
-pdu_12v_state channel_control() {
-  pdu_12v_command command = canzero_get_command();
+pdu_12v_state channel_control(pdu_12v_command cmd) {
   pdu_12v_state next_state = canzero_get_state();
-  switch (command) {
+  switch (cmd) {
     case pdu_12v_command_NONE:
       break;
     case pdu_12v_command_START:
