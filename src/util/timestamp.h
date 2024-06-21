@@ -1,4 +1,5 @@
 #pragma once
+#include "core_pins.h"
 #pragma once
 
 #include "metrics.h"
@@ -25,9 +26,7 @@ class Timestamp {
 public:
   inline static Timestamp now() {
     using namespace std::chrono;
-    microseconds x =
-        duration_cast<microseconds>(system_clock::now().time_since_epoch());
-    return Timestamp(x.count());
+    return Timestamp(micros());
   }
 
   Timestamp() = default;
