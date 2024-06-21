@@ -1,6 +1,7 @@
 #include "pdu12.hpp"
 #include "canzero/canzero.h"
 #include "core_pins.h"
+#include "print.h"
 #include "util/metrics.h"
 #include <InternalTemperature.h>
 #include <algorithm>
@@ -9,18 +10,22 @@
 std::array<Current, CHANNEL_COUNT> pdu12::m_currents;
 std::array<bool, CHANNEL_COUNT> pdu12::m_shorts;
 std::array<bool, CHANNEL_COUNT> pdu12::m_ctrl;
+std::array<Timestamp, CHANNEL_COUNT> pdu12::m_last_channel_ok;
 
 void pdu12::begin() {
   // initalize adc and shit
+  const auto now = Timestamp::now();
   for (size_t i = 0; i < CHANNEL_COUNT; ++i) {
     m_shorts[i] = false;
     m_currents[i] = 0_A;
     m_ctrl[i] = false;
+    m_last_channel_ok[i] = now;
   }
   analogReadResolution(12);
 }
 
 void pdu12::update() {
+  const auto now = Timestamp::now();
   // channel1
   {
     uint16_t avalue = analogRead(CHANNEL_2_23_SENSE_PIN);
@@ -92,27 +97,34 @@ void pdu12::update() {
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
     m_currents[lp_26_38] = (v * K_ILIS) / R_MEAS;
   }
-  digitalWrite(CHANNEL_2_23_CTRL_PIN, m_ctrl[lp_2_23]);
-  digitalWrite(CHANNEL_3_22_CTRL_PIN, m_ctrl[lp_3_22]);
-  digitalWrite(CHANNEL_4_21_CTRL_PIN, m_ctrl[lp_4_21]);
-  digitalWrite(CHANNEL_5_20_CTRL_PIN, m_ctrl[lp_5_20]);
-  digitalWrite(CHANNEL_6_19_CTRL_PIN, m_ctrl[lp_6_19]);
-  digitalWrite(CHANNEL_7_18_CTRL_PIN, m_ctrl[lp_7_18]);
-  digitalWrite(CHANNEL_8_17_CTRL_PIN, m_ctrl[lp_8_17]);
-  digitalWrite(CHANNEL_6_16_CTRL_PIN, m_ctrl[lp_9_16]);
-  digitalWrite(CHANNEL_10_15_CTRL_PIN, m_ctrl[lp_10_15]);
-  digitalWrite(CHANNEL_11_14_CTRL_PIN, m_ctrl[lp_11_14]);
-  digitalWrite(CHANNEL_12_41_CTRL_PIN, m_ctrl[lp_12_41]);
-  digitalWrite(CHANNEL_24_40_CTRL_PIN, m_ctrl[lp_24_40]);
-  digitalWrite(CHANNEL_25_39_CTRL_PIN, m_ctrl[lp_25_39]);
-  digitalWrite(CHANNEL_26_38_CTRL_PIN, m_ctrl[lp_26_38]);
+
 
   for (unsigned int channel = 0; channel < CHANNEL_COUNT; ++channel) {
-    m_shorts[channel] = m_currents[channel] >= SHORT_CIRCUIT_THRESH;
+    if (m_currents[channel] < SHORT_CIRCUIT_THRESH || !m_ctrl[channel]) {
+      m_last_channel_ok[channel] = now;
+    }
+    if (now - m_last_channel_ok[channel] > SHORT_CIRCUIT_TIMETHRESH){
+      m_shorts[channel] = true;
+    }
     if (m_shorts[channel]) {
       m_currents[channel] = 0_A;
     }
   }
+
+  digitalWrite(CHANNEL_2_23_CTRL_PIN, m_ctrl[lp_2_23] || m_shorts[lp_2_23]);
+  digitalWrite(CHANNEL_3_22_CTRL_PIN, m_ctrl[lp_3_22] || m_shorts[lp_3_22]);
+  digitalWrite(CHANNEL_4_21_CTRL_PIN, m_ctrl[lp_4_21] || m_shorts[lp_4_21]);
+  digitalWrite(CHANNEL_5_20_CTRL_PIN, m_ctrl[lp_5_20] || m_shorts[lp_5_20]);
+  digitalWrite(CHANNEL_6_19_CTRL_PIN, m_ctrl[lp_6_19] || m_shorts[lp_6_19]);
+  digitalWrite(CHANNEL_7_18_CTRL_PIN, m_ctrl[lp_7_18] || m_shorts[lp_7_18]);
+  digitalWrite(CHANNEL_8_17_CTRL_PIN, m_ctrl[lp_8_17] || m_shorts[lp_8_17]);
+  digitalWrite(CHANNEL_6_16_CTRL_PIN, m_ctrl[lp_9_16] || m_shorts[lp_9_16]);
+  digitalWrite(CHANNEL_10_15_CTRL_PIN, m_ctrl[lp_10_15] || m_shorts[lp_10_15]);
+  digitalWrite(CHANNEL_11_14_CTRL_PIN, m_ctrl[lp_11_14] || m_shorts[lp_11_14]);
+  digitalWrite(CHANNEL_12_41_CTRL_PIN, m_ctrl[lp_12_41] || m_shorts[lp_12_41]);
+  digitalWrite(CHANNEL_24_40_CTRL_PIN, m_ctrl[lp_24_40] || m_shorts[lp_24_40]);
+  digitalWrite(CHANNEL_25_39_CTRL_PIN, m_ctrl[lp_25_39] || m_shorts[lp_25_39]);
+  digitalWrite(CHANNEL_26_38_CTRL_PIN, m_ctrl[lp_26_38] || m_shorts[lp_26_38]);
 }
 
 Current pdu12::sense(Pdu12Channel channel) { return m_currents[channel]; }
@@ -138,10 +150,12 @@ Temperature pdu12::read_mcu_temperature() {
 }
 
 bool pdu12::any_short() {
-  return std::any_of(m_shorts.begin(), m_shorts.end(), [](auto x) { return x; });
+  return std::any_of(m_shorts.begin(), m_shorts.end(),
+                     [](auto x) { return x; });
 }
 
 Power pdu12::total_power_output() {
-  return std::accumulate(m_currents.begin(), m_currents.end(), Power(0), 
+  return std::accumulate(
+      m_currents.begin(), m_currents.end(), Power(0),
       [](Power p, Current c) { return p + Voltage(12) * c; });
 }
