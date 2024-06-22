@@ -3,7 +3,7 @@
 #include "firmware/pdu12.hpp"
 #include "pinout.h"
 
-constexpr size_t DEFAULT_FILTER_LENGTH = 10;
+constexpr size_t DEFAULT_FILTER_LENGTH = 100;
 constexpr Frequency DEFAULT_SENSE_FREQUENCY = 1_kHz;
 
 static Interval levitation_boards_sense_interval(DEFAULT_SENSE_FREQUENCY);

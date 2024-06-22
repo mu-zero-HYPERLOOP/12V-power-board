@@ -4,6 +4,8 @@
 #include <cinttypes>
 #include "print.h"
 
+#define MAX_DYN_HEARTBEATS 100
+
 static std::array<bool, node_id_count + MAX_DYN_HEARTBEATS> miss_can0;
 static std::array<bool, node_id_count + MAX_DYN_HEARTBEATS> miss_can1;
 
