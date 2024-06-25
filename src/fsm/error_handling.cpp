@@ -1,8 +1,8 @@
-#include "canzero/canzero.h"
 #include "error_handling.hpp"
+#include "canzero/canzero.h"
 #include "firmware/pdu12.hpp"
 
-pdu_12v_command error_handling::approve(pdu_12v_command cmd) {
+pdu_12v_command fsm::error_handling::approve(pdu_12v_command cmd) {
   if (canzero_get_error_any_short() == error_flag_ERROR) {
     // affected channel is already off anyway
     pdu12::set_sdc(false);

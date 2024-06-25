@@ -51,12 +51,9 @@ static inline pdu_channel_status pdu12_status_to_canzero_status(Pdu12ChannelStat
   }
 }
 
-pdu_12v_state channel_control(pdu_12v_command cmd) {
-  pdu_12v_state next_state = canzero_get_state();
-  switch (cmd) {
-    case pdu_12v_command_NONE:
-      break;
-    case pdu_12v_command_START:
+void channel_control(pdu_12v_state state) {
+  switch (state) {
+    case pdu_12v_state_CHANNELS_ON:
       pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, true);
       pdu12::control(GUIDANCE_BOARDS_POWER_CHANNEL, true);
       pdu12::control(MOTOR_DRIVER_POWER_CHANNEL, true);
@@ -65,9 +62,8 @@ pdu_12v_state channel_control(pdu_12v_command cmd) {
       pdu12::control(ANTENNA_POWER_CHANNEL, true);
       pdu12::control(FANS_POWER_CHANNEL, true);
       pdu12::control(LED_BOARD_CHANNEL, true);
-      next_state = pdu_12v_state_CHANNELS_ON;
       break;
-    case pdu_12v_command_TELEMETRY:
+    case pdu_12v_state_CHANNELS_TELEMETRY:
       pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, false);
       pdu12::control(GUIDANCE_BOARDS_POWER_CHANNEL, false);
       pdu12::control(MOTOR_DRIVER_POWER_CHANNEL, false);
@@ -76,9 +72,8 @@ pdu_12v_state channel_control(pdu_12v_command cmd) {
       pdu12::control(ANTENNA_POWER_CHANNEL, true);
       pdu12::control(FANS_POWER_CHANNEL, true);
       pdu12::control(LED_BOARD_CHANNEL, false);
-      next_state = pdu_12v_state_CHANNELS_TELEMETRY;
       break;
-    case pdu_12v_command_STOP:
+    case pdu_12v_state_CHANNELS_OFF:
       pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, false);
       pdu12::control(GUIDANCE_BOARDS_POWER_CHANNEL, false);
       pdu12::control(MOTOR_DRIVER_POWER_CHANNEL, false);
@@ -87,7 +82,8 @@ pdu_12v_state channel_control(pdu_12v_command cmd) {
       pdu12::control(ANTENNA_POWER_CHANNEL, false);
       pdu12::control(FANS_POWER_CHANNEL, false);
       pdu12::control(LED_BOARD_CHANNEL, false);
-      next_state = pdu_12v_state_CHANNELS_OFF;
+      break;
+    case pdu_12v_state_INIT:
       break;
   }
   
@@ -171,7 +167,5 @@ pdu_12v_state channel_control(pdu_12v_command cmd) {
     total_power_filter.push(pdu12::total_power_output());
     canzero_set_total_power(static_cast<float>(total_power_filter.get()));
   }
-
-  return next_state;
 }
 

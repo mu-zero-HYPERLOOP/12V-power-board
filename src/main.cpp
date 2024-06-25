@@ -7,7 +7,7 @@
 #include "util/boxcar.h"
 #include "util/interval.h"
 #include "util/timing.h"
-#include "error_handling.hpp"
+#include "fsm/fsm.hpp"
 #include <cassert>
 #include <cstdio>
 
@@ -27,19 +27,16 @@ int main() {
   canzero_update_continue(canzero_get_time());
 
   pdu12::begin();
+  fsm::begin();
 
-  canzero_set_state(pdu_12v_state_CHANNELS_OFF);
-  pdu_12v_state next_state = pdu_12v_state_CHANNELS_OFF;
-  canzero_set_command(pdu_12v_command_TELEMETRY);
   while (true) {
 
     canzero_can0_poll();
     canzero_can1_poll();
 
     pdu12::update();
-    canzero_set_state(next_state);
-    pdu_12v_command cmd = error_handling::approve(canzero_get_command());
-    next_state = channel_control(cmd);
+    fsm::update();
+    channel_control(canzero_get_state());
 
     // =========== SDC CTRL =========
     bool any_short = pdu12::any_short();
