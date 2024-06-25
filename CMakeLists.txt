@@ -18,7 +18,8 @@ add_executable(${PROJECT_NAME}
   src/canzero/canzero.cpp
   src/channel_control.cpp
   src/handle_heartbeat.cpp
-  src/error_handling.cpp
+  src/fsm/error_handling.cpp
+  src/fsm/fsm.cpp
 )
 
 target_include_directories(${PROJECT_NAME} PRIVATE src/ mock/)
