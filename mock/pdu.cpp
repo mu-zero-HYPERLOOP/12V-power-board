@@ -1,4 +1,5 @@
 
+#include "canzero/canzero.h"
 #include "firmware/pdu12.hpp"
 #include "util/metrics.h"
 #include <algorithm>
@@ -25,7 +26,9 @@ void pdu12::begin() {
   }
 }
 
-void pdu12::update() { }
+void pdu12::update() { 
+  canzero_set_error_any_short(any_short() ? error_flag_ERROR : error_flag_OK);
+}
 
 Current pdu12::sense(Pdu12Channel channel) {
   if (m_ctrl[channel]) {
