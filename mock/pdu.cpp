@@ -26,9 +26,7 @@ void pdu12::begin() {
   }
 }
 
-void pdu12::update() { 
-  canzero_set_error_any_short(any_short() ? error_flag_ERROR : error_flag_OK);
-}
+void pdu12::update() { }
 
 Current pdu12::sense(Pdu12Channel channel) {
   if (m_ctrl[channel]) {

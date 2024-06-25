@@ -3,6 +3,7 @@
 #include "core_pins.h"
 #include "print.h"
 #include "util/metrics.h"
+#include "util/timestamp.h"
 #include <InternalTemperature.h>
 #include <algorithm>
 #include <numeric>
@@ -103,7 +104,7 @@ void pdu12::update() {
     if (m_currents[channel] < SHORT_CIRCUIT_THRESH || !m_ctrl[channel]) {
       m_last_channel_ok[channel] = now;
     }
-    if (now - m_last_channel_ok[channel] > SHORT_CIRCUIT_TIMETHRESH){
+    if (now - m_last_channel_ok[channel] > SHORT_CIRCUIT_TIMETRESH){
       m_shorts[channel] = true;
     }
     if (m_shorts[channel]) {

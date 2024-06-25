@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/metrics.h"
+#include "util/timestamp.h"
 #include <cmath>
 #include <array>
 
@@ -81,10 +82,12 @@ private:
   static constexpr Resistance R_MEAS = 910_Ohm;
   static constexpr float K_ILIS = 1730.0f;
   static constexpr Current SHORT_CIRCUIT_THRESH = 5_A;
+  static constexpr Duration SHORT_CIRCUIT_TIMETRESH = 100_ms;
 
   static constexpr int SDC_CTRL_PIN = 32;
 
   static std::array<Current, CHANNEL_COUNT> m_currents;
   static std::array<bool, CHANNEL_COUNT> m_shorts;
   static std::array<bool, CHANNEL_COUNT> m_ctrl;
+  static std::array<Timestamp, CHANNEL_COUNT> m_last_channel_ok;
 };

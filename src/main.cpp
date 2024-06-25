@@ -35,6 +35,7 @@ int main() {
     canzero_can1_poll();
 
     pdu12::update();
+    canzero_set_error_any_short(pdu12::any_short() ? error_flag_ERROR : error_flag_OK);
     fsm::update();
     channel_control(canzero_get_state());
 
