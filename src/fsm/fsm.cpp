@@ -15,8 +15,8 @@ void fsm::begin() {
 void fsm::update() {
   pdu_12v_command cmd = error_handling::approve(canzero_get_command());
   switch (cmd) {
-
   case pdu_12v_command_NONE:
+    break;
   case pdu_12v_command_START:
     canzero_set_state(pdu_12v_state_CHANNELS_ON);
     if (canzero_get_error_any_short() == error_flag_OK && 
