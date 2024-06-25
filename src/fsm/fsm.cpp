@@ -22,26 +22,21 @@ void fsm::update() {
     if (canzero_get_error_any_short() == error_flag_OK && 
         canzero_get_error_heartbeat_miss() == error_flag_OK) {
       pdu12::set_sdc(true);
-      canzero_set_sdc_status(sdc_status_CLOSED);
     } else {
       pdu12::set_sdc(false);
-      canzero_set_sdc_status(sdc_status_OPEN);
     }
     break;
   case pdu_12v_command_STOP:
     canzero_set_state(pdu_12v_state_CHANNELS_OFF);
     pdu12::set_sdc(false);
-    canzero_set_sdc_status(sdc_status_OPEN);
     break;
   case pdu_12v_command_TELEMETRY:
     canzero_set_state(pdu_12v_state_CHANNELS_TELEMETRY);
     if (canzero_get_error_any_short() == error_flag_OK && 
         canzero_get_error_heartbeat_miss() == error_flag_OK) {
       pdu12::set_sdc(true);
-      canzero_set_sdc_status(sdc_status_CLOSED);
     } else {
       pdu12::set_sdc(false);
-      canzero_set_sdc_status(sdc_status_OPEN);
     }
     break;
   }

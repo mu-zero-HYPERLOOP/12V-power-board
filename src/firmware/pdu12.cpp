@@ -142,7 +142,10 @@ void pdu12::control(Pdu12Channel channel, bool active) {
   m_ctrl[channel] = active;
 }
 
-void pdu12::set_sdc(bool close) { digitalWrite(SDC_CTRL_PIN, close); }
+void pdu12::set_sdc(bool close) { 
+  digitalWrite(SDC_CTRL_PIN, close); 
+  canzero_set_sdc_status(close ? sdc_status_CLOSED : sdc_status_OPEN);
+}
 
 Temperature pdu12::read_mcu_temperature() {
   float temp = InternalTemperature.readTemperatureC();
