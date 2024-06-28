@@ -44,7 +44,8 @@ void pdu12::control(Pdu12Channel channel, bool active) {
   m_ctrl[channel] = active;
 }
 
-void pdu12::set_sdc(bool closed) { }
+void pdu12::set_sdc(bool closed) { 
+}
 
 Temperature pdu12::read_mcu_temperature() {
   float celcius = temp_dist(gen);

@@ -3,6 +3,7 @@
 #include "channel_control.h"
 #include "defaults.h"
 #include "error_level_range_check.h"
+#include "sdc.h"
 #include "firmware/pdu12.hpp"
 #include "util/boxcar.h"
 #include "util/interval.h"
@@ -27,6 +28,7 @@ int main() {
   canzero_update_continue(canzero_get_time());
 
   pdu12::begin();
+  sdc::begin();
   fsm::begin();
 
   while (true) {
