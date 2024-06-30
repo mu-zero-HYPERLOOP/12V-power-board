@@ -267,7 +267,7 @@ static const uint32_t canzero_message_power_board12_stream_errors_id = 0x4E;
 typedef struct {
   float m_mcu_temperature;
 } canzero_message_power_board12_stream_temperature;
-static const uint32_t canzero_message_power_board12_stream_temperature_id = 0x93;
+static const uint32_t canzero_message_power_board12_stream_temperature_id = 0xB3;
 typedef struct {
   pdu_channel_status m_levitation_boards_power_channel_status;
   pdu_channel_status m_guidance_boards_power_channel_status;
@@ -277,7 +277,7 @@ typedef struct {
   pdu_channel_status m_antenna_power_channel_status;
   pdu_channel_status m_led_board_power_channel_status;
 } canzero_message_power_board12_stream_channel_status;
-static const uint32_t canzero_message_power_board12_stream_channel_status_id = 0x53;
+static const uint32_t canzero_message_power_board12_stream_channel_status_id = 0x73;
 typedef struct {
   float m_raspberry_pi_power_channel_current;
   float m_antenna_power_channel_current;
@@ -288,11 +288,11 @@ typedef struct {
   float m_input_board_power_channel_current;
   float m_fans_power_channel_current;
 } canzero_message_power_board12_stream_channel_currents;
-static const uint32_t canzero_message_power_board12_stream_channel_currents_id = 0xD4;
+static const uint32_t canzero_message_power_board12_stream_channel_currents_id = 0x53;
 typedef struct {
   float m_total_power;
 } canzero_message_power_board12_stream_power_consumption;
-static const uint32_t canzero_message_power_board12_stream_power_consumption_id = 0x73;
+static const uint32_t canzero_message_power_board12_stream_power_consumption_id = 0x93;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;

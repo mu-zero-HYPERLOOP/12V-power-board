@@ -22,6 +22,7 @@ void pdu12::begin() {
     m_ctrl[i] = false;
     m_last_channel_ok[i] = now;
   }
+  pinMode(SDC_CTRL_PIN, OUTPUT);
   analogReadResolution(12);
 }
 
