@@ -67,7 +67,7 @@ void channel_control(pdu_12v_state state) {
       pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, false);
       pdu12::control(GUIDANCE_BOARDS_POWER_CHANNEL, false);
       pdu12::control(MOTOR_DRIVER_POWER_CHANNEL, false);
-      pdu12::control(INPUT_BOARD_POWER_CHANNEL, true);
+      pdu12::control(INPUT_BOARD_POWER_CHANNEL, false);
       pdu12::control(RASPBERRY_PI_POWER_CHANNEL, true);
       pdu12::control(ANTENNA_POWER_CHANNEL, true);
       pdu12::control(FANS_POWER_CHANNEL, true);

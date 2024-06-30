@@ -29,7 +29,7 @@ void fsm::update() {
     break;
   case pdu_12v_command_STOP:
     canzero_set_state(pdu_12v_state_CHANNELS_OFF);
-    sdc::close();
+    sdc::open();
     break;
   case pdu_12v_command_TELEMETRY:
     canzero_set_state(pdu_12v_state_CHANNELS_TELEMETRY);
