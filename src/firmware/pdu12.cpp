@@ -23,12 +23,42 @@ void pdu12::begin() {
     m_last_channel_ok[i] = now;
   }
   pinMode(SDC_CTRL_PIN, OUTPUT);
+  
+  pinMode(CHANNEL_2_23_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_3_22_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_4_21_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_5_20_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_6_19_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_7_18_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_8_17_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_9_16_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_10_15_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_11_14_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_12_41_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_24_40_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_25_39_CTRL_PIN, OUTPUT);
+  pinMode(CHANNEL_26_38_CTRL_PIN, OUTPUT);
+
+  pinMode(CHANNEL_2_23_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_3_22_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_4_21_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_5_20_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_6_19_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_7_18_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_8_17_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_9_16_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_10_15_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_11_14_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_12_41_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_24_40_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_25_39_SENSE_PIN, INPUT);
+  pinMode(CHANNEL_26_38_SENSE_PIN, INPUT);
+
   analogReadResolution(12);
 }
 
 void pdu12::update() {
   const auto now = Timestamp::now();
-  // channel1
   {
     uint16_t avalue = analogRead(CHANNEL_2_23_SENSE_PIN);
     Voltage v = Voltage(static_cast<float>(avalue) * 3.3f / 4095.0f);
@@ -120,7 +150,7 @@ void pdu12::update() {
   digitalWrite(CHANNEL_6_19_CTRL_PIN, m_ctrl[lp_6_19] || m_shorts[lp_6_19]);
   digitalWrite(CHANNEL_7_18_CTRL_PIN, m_ctrl[lp_7_18] || m_shorts[lp_7_18]);
   digitalWrite(CHANNEL_8_17_CTRL_PIN, m_ctrl[lp_8_17] || m_shorts[lp_8_17]);
-  digitalWrite(CHANNEL_6_16_CTRL_PIN, m_ctrl[lp_9_16] || m_shorts[lp_9_16]);
+  digitalWrite(CHANNEL_9_16_CTRL_PIN, m_ctrl[lp_9_16] || m_shorts[lp_9_16]);
   digitalWrite(CHANNEL_10_15_CTRL_PIN, m_ctrl[lp_10_15] || m_shorts[lp_10_15]);
   digitalWrite(CHANNEL_11_14_CTRL_PIN, m_ctrl[lp_11_14] || m_shorts[lp_11_14]);
   digitalWrite(CHANNEL_12_41_CTRL_PIN, m_ctrl[lp_12_41] || m_shorts[lp_12_41]);

@@ -65,7 +65,7 @@ private:
   static constexpr int CHANNEL_8_17_SENSE_PIN = 17;
   static constexpr int CHANNEL_8_17_CTRL_PIN = 8;
   static constexpr int CHANNEL_9_16_SENSE_PIN = 16;
-  static constexpr int CHANNEL_6_16_CTRL_PIN = 9;
+  static constexpr int CHANNEL_9_16_CTRL_PIN = 9;
   static constexpr int CHANNEL_10_15_SENSE_PIN = 15;
   static constexpr int CHANNEL_10_15_CTRL_PIN = 10;
   static constexpr int CHANNEL_11_14_SENSE_PIN = 14;
