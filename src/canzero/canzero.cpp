@@ -75,8 +75,8 @@ static void canzero_serialize_canzero_message_power_board12_stream_state(canzero
   }
   frame->id = 0x50;
   frame->dlc = 1;
-  ((uint32_t*)data)[0] = (uint8_t)(msg->m_state & (0xFF >> (8 - 2)));
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_sdc_status & (0xFF >> (8 - 1))) << 2;
+  ((uint32_t*)data)[0] = (uint8_t)(msg->m_state & (0xFF >> (8 - 3)));
+  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_sdc_status & (0xFF >> (8 - 1))) << 3;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_errors(canzero_message_power_board12_stream_errors* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
@@ -219,7 +219,7 @@ static void canzero_deserialize_canzero_message_set_req(canzero_frame* frame, ca
 }
 static void canzero_deserialize_canzero_message_mother_board_stream_pdu_12v_command(canzero_frame* frame, canzero_message_mother_board_stream_pdu_12v_command* msg) {
   uint8_t* data = frame->data;
-  msg->m_power_board12_command = (pdu_12v_command)(((uint32_t*)data)[0] & (0xFFFFFFFF >> (32 - 2)));
+  msg->m_power_board12_command = (pdu_12v_command)(((uint32_t*)data)[0] & (0xFFFFFFFF >> (32 - 3)));
 }
 static void canzero_deserialize_canzero_message_heartbeat_can0(canzero_frame* frame, canzero_message_heartbeat_can0* msg) {
   uint8_t* data = frame->data;
@@ -735,7 +735,7 @@ static PROGMEM void canzero_handle_get_req(canzero_frame* frame) {
     break;
   }
   case 2: {
-    resp.m_data |= ((uint32_t)(((uint8_t)__oe_state) & (0xFF >> (8 - 2)))) << 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_state) & (0xFF >> (8 - 3)))) << 0;
     resp.m_header.m_sof = 1;
     resp.m_header.m_eof = 1;
     resp.m_header.m_toggle = 0;
@@ -777,7 +777,7 @@ static PROGMEM void canzero_handle_get_req(canzero_frame* frame) {
     break;
   }
   case 8: {
-    resp.m_data |= ((uint32_t)(((uint8_t)__oe_command) & (0xFF >> (8 - 2)))) << 0;
+    resp.m_data |= ((uint32_t)(((uint8_t)__oe_command) & (0xFF >> (8 - 3)))) << 0;
     resp.m_header.m_sof = 1;
     resp.m_header.m_eof = 1;
     resp.m_header.m_toggle = 0;
@@ -1016,7 +1016,7 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       return;
     }
     pdu_12v_state state_tmp;
-    state_tmp = ((pdu_12v_state)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 2))));
+    state_tmp = ((pdu_12v_state)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 3))));
     canzero_set_state(state_tmp);
     break;
   }
@@ -1070,7 +1070,7 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
       return;
     }
     pdu_12v_command command_tmp;
-    command_tmp = ((pdu_12v_command)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 2))));
+    command_tmp = ((pdu_12v_command)((msg.m_data >> 0) & (0xFFFFFFFF >> (32 - 3))));
     canzero_set_command(command_tmp);
     break;
   }
@@ -1372,9 +1372,6 @@ void canzero_can0_poll() {
       case 0x11E:
         canzero_handle_get_req(&frame);
         break;
-      case 0x47:
-        canzero_handle_mother_board_stream_pdu_12v_command(&frame);
-        break;
       case 0x14F:
         canzero_handle_heartbeat_can0(&frame);
         break;
@@ -1387,6 +1384,9 @@ void canzero_can1_poll() {
     switch (frame.id) {
       case 0x13E:
         canzero_handle_set_req(&frame);
+        break;
+      case 0x47:
+        canzero_handle_mother_board_stream_pdu_12v_command(&frame);
         break;
       case 0x14E:
         canzero_handle_heartbeat_can1(&frame);
@@ -1449,7 +1449,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 6743895009175952551ull;
+  __oe_config_hash = 13450635031693126951ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
@@ -1651,7 +1651,7 @@ void canzero_send_build_time() {
 }
 void canzero_send_state() {
   canzero_message_get_resp msg;
-  msg.m_data |= ((uint32_t)(((uint8_t)__oe_state) & (0xFF >> (8 - 2)))) << 0;
+  msg.m_data |= ((uint32_t)(((uint8_t)__oe_state) & (0xFF >> (8 - 3)))) << 0;
   msg.m_header.m_eof = 1;
   msg.m_header.m_sof = 1;
   msg.m_header.m_toggle = 0;
@@ -1729,7 +1729,7 @@ void canzero_send_error_level_mcu_temperature() {
 }
 void canzero_send_command() {
   canzero_message_get_resp msg;
-  msg.m_data |= ((uint32_t)(((uint8_t)__oe_command) & (0xFF >> (8 - 2)))) << 0;
+  msg.m_data |= ((uint32_t)(((uint8_t)__oe_command) & (0xFF >> (8 - 3)))) << 0;
   msg.m_header.m_eof = 1;
   msg.m_header.m_sof = 1;
   msg.m_header.m_toggle = 0;

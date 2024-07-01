@@ -36,6 +36,7 @@ typedef enum {
   pdu_12v_command_START = 1,
   pdu_12v_command_STOP = 2,
   pdu_12v_command_TELEMETRY = 3,
+  pdu_12v_command_RESTART = 4,
 } pdu_12v_command;
 typedef struct {
   uint8_t m_sof;
@@ -60,6 +61,7 @@ typedef enum {
   pdu_12v_state_CHANNELS_OFF = 1,
   pdu_12v_state_CHANNELS_TELEMETRY = 2,
   pdu_12v_state_CHANNELS_ON = 3,
+  pdu_12v_state_RESTARTING = 4,
 } pdu_12v_state;
 typedef enum {
   sdc_status_OPEN = 0,

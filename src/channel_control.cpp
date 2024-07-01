@@ -73,6 +73,8 @@ void channel_control(pdu_12v_state state) {
       pdu12::control(FANS_POWER_CHANNEL, true);
       pdu12::control(LED_BOARD_CHANNEL, false);
       break;
+    case pdu_12v_state_INIT:
+    case pdu_12v_state_RESTARTING:
     case pdu_12v_state_CHANNELS_OFF:
       pdu12::control(LEVITATION_BOARDS_POWER_CHANNEL, false);
       pdu12::control(GUIDANCE_BOARDS_POWER_CHANNEL, false);
@@ -83,10 +85,8 @@ void channel_control(pdu_12v_state state) {
       pdu12::control(FANS_POWER_CHANNEL, false);
       pdu12::control(LED_BOARD_CHANNEL, false);
       break;
-    case pdu_12v_state_INIT:
-      break;
-  }
-  
+    }
+
   // ====== LEVITATION BOARDS POWER CHANNEL ===========
   if (levitation_boards_sense_interval.next()) {
     levitation_boards_current_filter.push(
