@@ -46,7 +46,7 @@ static void canzero_serialize_canzero_message_get_resp(canzero_message_get_resp*
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x11D;
+  frame->id = 0x15D;
   frame->dlc = 8;
   ((uint32_t*)data)[0] = (uint8_t)(msg->m_header.m_sof & (0xFF >> (8 - 1)));
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_eof & (0xFF >> (8 - 1))) << 1;
@@ -61,7 +61,7 @@ static void canzero_serialize_canzero_message_set_resp(canzero_message_set_resp*
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x13D;
+  frame->id = 0x17D;
   frame->dlc = 4;
   ((uint32_t*)data)[0] = (uint16_t)(msg->m_header.m_od_index & (0xFFFF >> (16 - 13)));
   ((uint32_t*)data)[0] |= msg->m_header.m_client_id << 13;
@@ -73,17 +73,26 @@ static void canzero_serialize_canzero_message_power_board12_stream_state(canzero
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x50;
+  frame->id = 0xB2;
   frame->dlc = 1;
   ((uint32_t*)data)[0] = (uint8_t)(msg->m_state & (0xFF >> (8 - 3)));
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_sdc_status & (0xFF >> (8 - 1))) << 3;
+}
+static void canzero_serialize_canzero_message_power_board12_stream_config_hash(canzero_message_power_board12_stream_config_hash* msg, canzero_frame* frame) {
+  uint8_t* data = frame->data;
+  for(uint8_t i = 0; i < 8; ++i){
+    data[i] = 0;
+  }
+  frame->id = 0x72;
+  frame->dlc = 8;
+  ((uint64_t*)data)[0] = msg->m_config_hash;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_errors(canzero_message_power_board12_stream_errors* msg, canzero_frame* frame) {
   uint8_t* data = frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xF1;
+  frame->id = 0x92;
   frame->dlc = 1;
   ((uint32_t*)data)[0] = (uint8_t)(msg->m_assertion_fault & (0xFF >> (8 - 1)));
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_error_any_short & (0xFF >> (8 - 1))) << 1;
@@ -95,7 +104,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_temperature(c
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xB5;
+  frame->id = 0xD7;
   frame->dlc = 1;
   uint32_t mcu_temperature_0 = ((msg->m_mcu_temperature - -1) / 0.592156862745098) + 0.5f;
   if (mcu_temperature_0 > 0xFF) {
@@ -108,7 +117,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_statu
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x75;
+  frame->id = 0x97;
   frame->dlc = 2;
   ((uint32_t*)data)[0] = (uint8_t)(msg->m_levitation_boards_power_channel_status & (0xFF >> (8 - 2)));
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_guidance_boards_power_channel_status & (0xFF >> (8 - 2))) << 2;
@@ -123,7 +132,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_curre
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x55;
+  frame->id = 0x77;
   frame->dlc = 8;
   uint32_t raspberry_pi_power_channel_current_0 = ((msg->m_raspberry_pi_power_channel_current - 0) / 0.0196078431372549) + 0.5f;
   if (raspberry_pi_power_channel_current_0 > 0xFF) {
@@ -171,7 +180,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_power_consump
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x95;
+  frame->id = 0xB7;
   frame->dlc = 2;
   uint32_t total_power_0 = ((msg->m_total_power - 0) / 0.00025940337224383917) + 0.5f;
   if (total_power_0 > 0xFFFF) {
@@ -184,7 +193,7 @@ static void canzero_serialize_canzero_message_heartbeat_can0(canzero_message_hea
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x14F;
+  frame->id = 0x191;
   frame->dlc = 2;
   ((uint32_t*)data)[0] = msg->m_node_id;
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
@@ -195,7 +204,7 @@ static void canzero_serialize_canzero_message_heartbeat_can1(canzero_message_hea
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x14E;
+  frame->id = 0x190;
   frame->dlc = 2;
   ((uint32_t*)data)[0] = msg->m_node_id;
   ((uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
@@ -316,7 +325,7 @@ static void job_pool_allocator_free(job_t *job) {
   job_allocator.freelist = entry;
 }
 
-#define SCHEDULER_HEAP_SIZE 72
+#define SCHEDULER_HEAP_SIZE 73
 typedef struct {
   job_t *heap[SCHEDULER_HEAP_SIZE]; // job**
   uint32_t size;
@@ -457,13 +466,23 @@ static void schedule_state_interval_job(){
   state_interval_job.job.stream_job.last_schedule = time;
   scheduler_schedule(&state_interval_job);
 }
+static job_t config_hash_interval_job;
+static const uint32_t config_hash_interval = 0;
+static void schedule_config_hash_interval_job(){
+  uint32_t time = canzero_get_time();
+  config_hash_interval_job.climax = time + config_hash_interval;
+  config_hash_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
+  config_hash_interval_job.job.stream_job.stream_id = 1;
+  config_hash_interval_job.job.stream_job.last_schedule = time;
+  scheduler_schedule(&config_hash_interval_job);
+}
 static job_t errors_interval_job;
 static const uint32_t errors_interval = 0;
 static void schedule_errors_interval_job(){
   uint32_t time = canzero_get_time();
   errors_interval_job.climax = time + errors_interval;
   errors_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  errors_interval_job.job.stream_job.stream_id = 1;
+  errors_interval_job.job.stream_job.stream_id = 2;
   errors_interval_job.job.stream_job.last_schedule = time;
   scheduler_schedule(&errors_interval_job);
 }
@@ -473,7 +492,7 @@ static void schedule_temperature_interval_job(){
   uint32_t time = canzero_get_time();
   temperature_interval_job.climax = time + temperature_interval;
   temperature_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  temperature_interval_job.job.stream_job.stream_id = 2;
+  temperature_interval_job.job.stream_job.stream_id = 3;
   temperature_interval_job.job.stream_job.last_schedule = time;
   scheduler_schedule(&temperature_interval_job);
 }
@@ -483,7 +502,7 @@ static void schedule_channel_status_interval_job(){
   uint32_t time = canzero_get_time();
   channel_status_interval_job.climax = time + channel_status_interval;
   channel_status_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  channel_status_interval_job.job.stream_job.stream_id = 3;
+  channel_status_interval_job.job.stream_job.stream_id = 4;
   channel_status_interval_job.job.stream_job.last_schedule = time;
   scheduler_schedule(&channel_status_interval_job);
 }
@@ -493,7 +512,7 @@ static void schedule_channel_currents_interval_job(){
   uint32_t time = canzero_get_time();
   channel_currents_interval_job.climax = time + channel_currents_interval;
   channel_currents_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  channel_currents_interval_job.job.stream_job.stream_id = 4;
+  channel_currents_interval_job.job.stream_job.stream_id = 5;
   channel_currents_interval_job.job.stream_job.last_schedule = time;
   scheduler_schedule(&channel_currents_interval_job);
 }
@@ -503,7 +522,7 @@ static void schedule_power_consumption_interval_job(){
   uint32_t time = canzero_get_time();
   power_consumption_interval_job.climax = time + power_consumption_interval;
   power_consumption_interval_job.tag = STREAM_INTERVAL_JOB_TAG;
-  power_consumption_interval_job.job.stream_job.stream_id = 5;
+  power_consumption_interval_job.job.stream_job.stream_id = 6;
   power_consumption_interval_job.job.stream_job.last_schedule = time;
   scheduler_schedule(&power_consumption_interval_job);
 }
@@ -528,10 +547,21 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_sdc_status = __oe_sdc_status;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_state(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
       case 1: {
+        job->job.stream_job.last_schedule = time;
+        scheduler_reschedule(time + 5000);
+        canzero_exit_critical();
+        canzero_message_power_board12_stream_config_hash stream_message;
+        stream_message.m_config_hash = __oe_config_hash;
+        canzero_frame stream_frame;
+        canzero_serialize_canzero_message_power_board12_stream_config_hash(&stream_message, &stream_frame);
+        canzero_can0_send(&stream_frame);
+        break;
+      }
+      case 2: {
         job->job.stream_job.last_schedule = time;
         scheduler_reschedule(time + 1000);
         canzero_exit_critical();
@@ -542,10 +572,10 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_error_level_mcu_temperature = __oe_error_level_mcu_temperature;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_errors(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
-      case 2: {
+      case 3: {
         job->job.stream_job.last_schedule = time;
         scheduler_reschedule(time + 500);
         canzero_exit_critical();
@@ -553,10 +583,10 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_mcu_temperature = __oe_mcu_temperature;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_temperature(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
-      case 3: {
+      case 4: {
         job->job.stream_job.last_schedule = time;
         scheduler_reschedule(time + 1000);
         canzero_exit_critical();
@@ -570,10 +600,10 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_led_board_power_channel_status = __oe_led_board_power_channel_status;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_channel_status(&stream_message, &stream_frame);
-        canzero_can0_send(&stream_frame);
+        canzero_can1_send(&stream_frame);
         break;
       }
-      case 4: {
+      case 5: {
         job->job.stream_job.last_schedule = time;
         scheduler_reschedule(time + 500);
         canzero_exit_critical();
@@ -591,7 +621,7 @@ static void schedule_jobs(uint32_t time) {
         canzero_can1_send(&stream_frame);
         break;
       }
-      case 5: {
+      case 6: {
         job->job.stream_job.last_schedule = time;
         scheduler_reschedule(time + 500);
         canzero_exit_critical();
@@ -599,7 +629,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_total_power = __oe_total_power;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_power_consumption(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
         default:
@@ -1369,10 +1399,13 @@ void canzero_can0_poll() {
   canzero_frame frame;
   while (canzero_can0_recv(&frame)) {
     switch (frame.id) {
-      case 0x11E:
+      case 0x15E:
         canzero_handle_get_req(&frame);
         break;
-      case 0x14F:
+      case 0x49:
+        canzero_handle_mother_board_stream_pdu_12v_command(&frame);
+        break;
+      case 0x191:
         canzero_handle_heartbeat_can0(&frame);
         break;
     }
@@ -1382,13 +1415,10 @@ void canzero_can1_poll() {
   canzero_frame frame;
   while (canzero_can1_recv(&frame)) {
     switch (frame.id) {
-      case 0x13E:
+      case 0x17E:
         canzero_handle_set_req(&frame);
         break;
-      case 0x47:
-        canzero_handle_mother_board_stream_pdu_12v_command(&frame);
-        break;
-      case 0x14E:
+      case 0x190:
         canzero_handle_heartbeat_can1(&frame);
         break;
     }
@@ -1449,7 +1479,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 13450635031693126951ull;
+  __oe_config_hash = 5389630532891529154ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
@@ -1466,12 +1496,23 @@ void canzero_init() {
   schedule_heartbeat_job();
   schedule_heartbeat_wdg_job();
   schedule_state_interval_job();
+  schedule_config_hash_interval_job();
   schedule_errors_interval_job();
   schedule_temperature_interval_job();
   schedule_channel_status_interval_job();
   schedule_channel_currents_interval_job();
   schedule_power_consumption_interval_job();
 
+}
+void canzero_set_config_hash(uint64_t value) {
+  extern uint64_t __oe_config_hash;
+  if (__oe_config_hash != value) {
+    __oe_config_hash = value;
+    if (config_hash_interval_job.climax > config_hash_interval_job.job.stream_job.last_schedule + 0) {
+      config_hash_interval_job.climax = config_hash_interval_job.job.stream_job.last_schedule + 0;
+      scheduler_promote_job(&config_hash_interval_job);
+    }
+  }
 }
 void canzero_set_state(pdu_12v_state value) {
   extern pdu_12v_state __oe_state;

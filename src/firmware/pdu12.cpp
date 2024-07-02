@@ -23,7 +23,6 @@ void pdu12::begin() {
     m_last_channel_ok[i] = now;
   }
   pinMode(SDC_CTRL_PIN, OUTPUT);
-  
   pinMode(CHANNEL_2_23_CTRL_PIN, OUTPUT);
   pinMode(CHANNEL_3_22_CTRL_PIN, OUTPUT);
   pinMode(CHANNEL_4_21_CTRL_PIN, OUTPUT);
@@ -38,22 +37,6 @@ void pdu12::begin() {
   pinMode(CHANNEL_24_40_CTRL_PIN, OUTPUT);
   pinMode(CHANNEL_25_39_CTRL_PIN, OUTPUT);
   pinMode(CHANNEL_26_38_CTRL_PIN, OUTPUT);
-
-  pinMode(CHANNEL_2_23_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_3_22_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_4_21_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_5_20_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_6_19_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_7_18_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_8_17_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_9_16_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_10_15_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_11_14_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_12_41_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_24_40_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_25_39_SENSE_PIN, INPUT);
-  pinMode(CHANNEL_26_38_SENSE_PIN, INPUT);
-
   analogReadResolution(12);
 }
 
