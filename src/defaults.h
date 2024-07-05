@@ -10,7 +10,7 @@ static void can_defaults() {
   canzero_set_assertion_fault(error_flag_OK);
   canzero_set_error_any_short(error_flag_OK);
   canzero_set_error_heartbeat_miss(error_flag_OK);
-  canzero_set_error_any_short(error_flag_OK);
+  canzero_set_last_node_missed(255);
 
   canzero_set_error_level_mcu_temperature(error_level_OK);
   canzero_set_error_level_config_mcu_temperature(error_level_config{
