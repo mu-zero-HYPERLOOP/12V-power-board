@@ -25,6 +25,8 @@ static void can_defaults() {
       .m_ignore_error = bool_t_FALSE,
   });
   canzero_set_mcu_temperature(0);
+  canzero_set_error_mcu_temperature_invalid(error_flag_OK);
+  canzero_set_error_level_mcu_temperature(error_level_OK);
 
   canzero_set_fans_power_channel_status(pdu_channel_status_OFF);
   canzero_set_fans_power_channel_current(0);
