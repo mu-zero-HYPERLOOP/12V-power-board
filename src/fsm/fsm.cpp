@@ -10,7 +10,7 @@ Timestamp last_transition;
 void fsm::begin() {
   canzero_set_state(pdu_12v_state_CHANNELS_OFF);
   canzero_set_command(pdu_12v_command_TELEMETRY);
-  canzero_set_sdc_status(sdc_status_OPEN);
+  pdu12::set_sdc(false);
   last_transition = Timestamp::now();
 }
 

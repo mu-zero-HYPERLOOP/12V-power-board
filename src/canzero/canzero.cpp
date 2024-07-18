@@ -44,67 +44,67 @@ error_flag DMAMEM __oe_error_mcu_temperature_invalid;
 error_level_config DMAMEM __oe_error_level_config_mcu_temperature;
 float DMAMEM __oe_total_power;
 static void canzero_serialize_canzero_message_get_resp(canzero_message_get_resp* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
   frame->id = 0x1BD;
   frame->dlc = 8;
-  ((uint32_t*)data)[0] = (uint8_t)(msg->m_header.m_sof & (0xFF >> (8 - 1)));
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_eof & (0xFF >> (8 - 1))) << 1;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_toggle & (0xFF >> (8 - 1))) << 2;
-  ((uint32_t*)data)[0] |= (uint16_t)(msg->m_header.m_od_index & (0xFFFF >> (16 - 13))) << 3;
-  ((uint32_t*)data)[0] |= msg->m_header.m_client_id << 16;
-  ((uint32_t*)data)[0] |= msg->m_header.m_server_id << 24;
-  ((uint32_t*)data)[1] = msg->m_data;
+  ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_header.m_sof & (0xFF >> (8 - 1)));
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_eof & (0xFF >> (8 - 1))) << 1;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_toggle & (0xFF >> (8 - 1))) << 2;
+  ((volatile uint32_t*)data)[0] |= (uint16_t)(msg->m_header.m_od_index & (0xFFFF >> (16 - 13))) << 3;
+  ((volatile uint32_t*)data)[0] |= msg->m_header.m_client_id << 16;
+  ((volatile uint32_t*)data)[0] |= msg->m_header.m_server_id << 24;
+  ((volatile uint32_t*)data)[1] = msg->m_data;
 }
 static void canzero_serialize_canzero_message_set_resp(canzero_message_set_resp* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
   frame->id = 0x1DD;
   frame->dlc = 4;
-  ((uint32_t*)data)[0] = (uint16_t)(msg->m_header.m_od_index & (0xFFFF >> (16 - 13)));
-  ((uint32_t*)data)[0] |= msg->m_header.m_client_id << 13;
-  ((uint32_t*)data)[0] |= msg->m_header.m_server_id << 21;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_erno & (0xFF >> (8 - 1))) << 29;
+  ((volatile uint32_t*)data)[0] = (uint16_t)(msg->m_header.m_od_index & (0xFFFF >> (16 - 13)));
+  ((volatile uint32_t*)data)[0] |= msg->m_header.m_client_id << 13;
+  ((volatile uint32_t*)data)[0] |= msg->m_header.m_server_id << 21;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_erno & (0xFF >> (8 - 1))) << 29;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_state(canzero_message_power_board12_stream_state* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
   frame->id = 0xF5;
   frame->dlc = 1;
-  ((uint32_t*)data)[0] = (uint8_t)(msg->m_state & (0xFF >> (8 - 3)));
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_sdc_status & (0xFF >> (8 - 1))) << 3;
+  ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_state & (0xFF >> (8 - 3)));
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_sdc_status & (0xFF >> (8 - 1))) << 3;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_config_hash(canzero_message_power_board12_stream_config_hash* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
   frame->id = 0xB5;
   frame->dlc = 8;
-  ((uint64_t*)data)[0] = msg->m_config_hash;
+  ((volatile uint64_t*)data)[0] = msg->m_config_hash;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_errors(canzero_message_power_board12_stream_errors* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
   frame->id = 0xD5;
   frame->dlc = 2;
-  ((uint32_t*)data)[0] = (uint8_t)(msg->m_assertion_fault & (0xFF >> (8 - 1)));
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_error_any_short & (0xFF >> (8 - 1))) << 1;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_error_heartbeat_miss & (0xFF >> (8 - 1))) << 2;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_error_level_mcu_temperature & (0xFF >> (8 - 2))) << 3;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_error_mcu_temperature_invalid & (0xFF >> (8 - 1))) << 5;
-  ((uint32_t*)data)[0] |= msg->m_last_node_missed << 6;
+  ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_assertion_fault & (0xFF >> (8 - 1)));
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_error_any_short & (0xFF >> (8 - 1))) << 1;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_error_heartbeat_miss & (0xFF >> (8 - 1))) << 2;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_error_level_mcu_temperature & (0xFF >> (8 - 2))) << 3;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_error_mcu_temperature_invalid & (0xFF >> (8 - 1))) << 5;
+  ((volatile uint32_t*)data)[0] |= msg->m_last_node_missed << 6;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_temperature(canzero_message_power_board12_stream_temperature* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
@@ -114,25 +114,25 @@ static void canzero_serialize_canzero_message_power_board12_stream_temperature(c
   if (mcu_temperature_0 > 0xFF) {
     mcu_temperature_0 = 0xFF;
   }
-  ((uint32_t*)data)[0] = mcu_temperature_0;
+  ((volatile uint32_t*)data)[0] = mcu_temperature_0;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_channel_status(canzero_message_power_board12_stream_channel_status* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
   frame->id = 0xF9;
   frame->dlc = 2;
-  ((uint32_t*)data)[0] = (uint8_t)(msg->m_levitation_boards_power_channel_status & (0xFF >> (8 - 2)));
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_guidance_boards_power_channel_status & (0xFF >> (8 - 2))) << 2;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_motor_driver_power_channel_status & (0xFF >> (8 - 2))) << 4;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_input_board_power_channel_status & (0xFF >> (8 - 2))) << 6;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_raspberry_pi_power_channel_status & (0xFF >> (8 - 2))) << 8;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_antenna_power_channel_status & (0xFF >> (8 - 2))) << 10;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_led_board_power_channel_status & (0xFF >> (8 - 2))) << 12;
+  ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_levitation_boards_power_channel_status & (0xFF >> (8 - 2)));
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_guidance_boards_power_channel_status & (0xFF >> (8 - 2))) << 2;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_motor_driver_power_channel_status & (0xFF >> (8 - 2))) << 4;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_input_board_power_channel_status & (0xFF >> (8 - 2))) << 6;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_raspberry_pi_power_channel_status & (0xFF >> (8 - 2))) << 8;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_antenna_power_channel_status & (0xFF >> (8 - 2))) << 10;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_led_board_power_channel_status & (0xFF >> (8 - 2))) << 12;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_channel_currents(canzero_message_power_board12_stream_channel_currents* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
@@ -142,45 +142,45 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_curre
   if (raspberry_pi_power_channel_current_0 > 0xFF) {
     raspberry_pi_power_channel_current_0 = 0xFF;
   }
-  ((uint32_t*)data)[0] = raspberry_pi_power_channel_current_0;
+  ((volatile uint32_t*)data)[0] = raspberry_pi_power_channel_current_0;
   uint32_t antenna_power_channel_current_8 = ((msg->m_antenna_power_channel_current - 0) / 0.0196078431372549) + 0.5f;
   if (antenna_power_channel_current_8 > 0xFF) {
     antenna_power_channel_current_8 = 0xFF;
   }
-  ((uint32_t*)data)[0] |= antenna_power_channel_current_8 << 8;
+  ((volatile uint32_t*)data)[0] |= antenna_power_channel_current_8 << 8;
   uint32_t led_board_power_channel_current_16 = ((msg->m_led_board_power_channel_current - 0) / 0.0392156862745098) + 0.5f;
   if (led_board_power_channel_current_16 > 0xFF) {
     led_board_power_channel_current_16 = 0xFF;
   }
-  ((uint32_t*)data)[0] |= led_board_power_channel_current_16 << 16;
+  ((volatile uint32_t*)data)[0] |= led_board_power_channel_current_16 << 16;
   uint32_t levitation_boards_power_channel_current_24 = ((msg->m_levitation_boards_power_channel_current - 0) / 0.0196078431372549) + 0.5f;
   if (levitation_boards_power_channel_current_24 > 0xFF) {
     levitation_boards_power_channel_current_24 = 0xFF;
   }
-  ((uint32_t*)data)[0] |= levitation_boards_power_channel_current_24 << 24;
+  ((volatile uint32_t*)data)[0] |= levitation_boards_power_channel_current_24 << 24;
   uint32_t guidance_boards_power_channel_current_32 = ((msg->m_guidance_boards_power_channel_current - 0) / 0.0196078431372549) + 0.5f;
   if (guidance_boards_power_channel_current_32 > 0xFF) {
     guidance_boards_power_channel_current_32 = 0xFF;
   }
-  ((uint32_t*)data)[1] = guidance_boards_power_channel_current_32;
+  ((volatile uint32_t*)data)[1] = guidance_boards_power_channel_current_32;
   uint32_t motor_driver_power_channel_current_40 = ((msg->m_motor_driver_power_channel_current - 0) / 0.0196078431372549) + 0.5f;
   if (motor_driver_power_channel_current_40 > 0xFF) {
     motor_driver_power_channel_current_40 = 0xFF;
   }
-  ((uint32_t*)data)[1] |= motor_driver_power_channel_current_40 << 8;
+  ((volatile uint32_t*)data)[1] |= motor_driver_power_channel_current_40 << 8;
   uint32_t input_board_power_channel_current_48 = ((msg->m_input_board_power_channel_current - 0) / 0.0196078431372549) + 0.5f;
   if (input_board_power_channel_current_48 > 0xFF) {
     input_board_power_channel_current_48 = 0xFF;
   }
-  ((uint32_t*)data)[1] |= input_board_power_channel_current_48 << 16;
+  ((volatile uint32_t*)data)[1] |= input_board_power_channel_current_48 << 16;
   uint32_t fans_power_channel_current_56 = ((msg->m_fans_power_channel_current - 0) / 0.0196078431372549) + 0.5f;
   if (fans_power_channel_current_56 > 0xFF) {
     fans_power_channel_current_56 = 0xFF;
   }
-  ((uint32_t*)data)[1] |= fans_power_channel_current_56 << 24;
+  ((volatile uint32_t*)data)[1] |= fans_power_channel_current_56 << 24;
 }
 static void canzero_serialize_canzero_message_power_board12_stream_power_consumption(canzero_message_power_board12_stream_power_consumption* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
@@ -190,29 +190,29 @@ static void canzero_serialize_canzero_message_power_board12_stream_power_consump
   if (total_power_0 > 0xFFFF) {
     total_power_0 = 0xFFFF;
   }
-  ((uint32_t*)data)[0] = total_power_0;
+  ((volatile uint32_t*)data)[0] = total_power_0;
 }
 static void canzero_serialize_canzero_message_heartbeat_can0(canzero_message_heartbeat_can0* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
   frame->id = 0x1F4;
   frame->dlc = 2;
-  ((uint32_t*)data)[0] = msg->m_node_id;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_ticks_next & (0xFF >> (8 - 7))) << 9;
+  ((volatile uint32_t*)data)[0] = msg->m_node_id;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_ticks_next & (0xFF >> (8 - 7))) << 9;
 }
 static void canzero_serialize_canzero_message_heartbeat_can1(canzero_message_heartbeat_can1* msg, canzero_frame* frame) {
-  uint8_t* data = frame->data;
+  volatile uint8_t* data = (volatile uint8_t*)frame->data;
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
   frame->id = 0x1F3;
   frame->dlc = 2;
-  ((uint32_t*)data)[0] = msg->m_node_id;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
-  ((uint32_t*)data)[0] |= (uint8_t)(msg->m_ticks_next & (0xFF >> (8 - 7))) << 9;
+  ((volatile uint32_t*)data)[0] = msg->m_node_id;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
+  ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_ticks_next & (0xFF >> (8 - 7))) << 9;
 }
 static void canzero_deserialize_canzero_message_get_req(canzero_frame* frame, canzero_message_get_req* msg) {
   uint8_t* data = frame->data;
@@ -416,7 +416,7 @@ static void schedule_get_resp_fragmentation_job(uint32_t *fragmentation_buffer, 
 }
 
 static job_t heartbeat_job;
-static const uint32_t heartbeat_interval = 100;
+static const uint32_t heartbeat_interval = 169;
 static void schedule_heartbeat_job() {
   heartbeat_job.climax = canzero_get_time();
   heartbeat_job.tag = HEARTBEAT_JOB_TAG;
@@ -551,7 +551,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_sdc_status = __oe_sdc_status;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_state(&stream_message, &stream_frame);
-        canzero_can0_send(&stream_frame);
+        canzero_can1_send(&stream_frame);
         break;
       }
       case 1: {
@@ -589,7 +589,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_mcu_temperature = __oe_mcu_temperature;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_temperature(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
       case 4: {
@@ -651,13 +651,13 @@ static void schedule_jobs(uint32_t time) {
         canzero_message_heartbeat_can0 heartbeat_can0;
         heartbeat_can0.m_node_id = node_id_power_board12;
         heartbeat_can0.m_unregister = 0;
-        heartbeat_can0.m_ticks_next = 20;
+        heartbeat_can0.m_ticks_next = 14;
         canzero_serialize_canzero_message_heartbeat_can0(&heartbeat_can0, &heartbeat_frame);
         canzero_can0_send(&heartbeat_frame);
         canzero_message_heartbeat_can1 heartbeat_can1;
         heartbeat_can1.m_node_id = node_id_power_board12;
         heartbeat_can1.m_unregister = 0;
-        heartbeat_can1.m_ticks_next = 20;
+        heartbeat_can1.m_ticks_next = 14;
         canzero_serialize_canzero_message_heartbeat_can1(&heartbeat_can1, &heartbeat_frame);
         canzero_can1_send(&heartbeat_frame);
         break;
@@ -1517,7 +1517,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 2876945102520670225ull;
+  __oe_config_hash = 1421184262919515853ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
