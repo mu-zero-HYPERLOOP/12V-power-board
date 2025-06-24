@@ -48,7 +48,7 @@ static void canzero_serialize_canzero_message_get_resp(canzero_message_get_resp*
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x1BD;
+  frame->id = 0x13D;
   frame->dlc = 8;
   ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_header.m_sof & (0xFF >> (8 - 1)));
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_header.m_eof & (0xFF >> (8 - 1))) << 1;
@@ -63,7 +63,7 @@ static void canzero_serialize_canzero_message_set_resp(canzero_message_set_resp*
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x1DD;
+  frame->id = 0x15D;
   frame->dlc = 4;
   ((volatile uint32_t*)data)[0] = (uint16_t)(msg->m_header.m_od_index & (0xFFFF >> (16 - 13)));
   ((volatile uint32_t*)data)[0] |= msg->m_header.m_client_id << 13;
@@ -75,7 +75,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_state(canzero
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xF5;
+  frame->id = 0x90;
   frame->dlc = 1;
   ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_state & (0xFF >> (8 - 3)));
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_sdc_status & (0xFF >> (8 - 1))) << 3;
@@ -85,7 +85,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_config_hash(c
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xB5;
+  frame->id = 0x50;
   frame->dlc = 8;
   ((volatile uint64_t*)data)[0] = msg->m_config_hash;
 }
@@ -94,7 +94,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_errors(canzer
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xD5;
+  frame->id = 0x70;
   frame->dlc = 2;
   ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_assertion_fault & (0xFF >> (8 - 1)));
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_error_any_short & (0xFF >> (8 - 1))) << 1;
@@ -108,7 +108,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_temperature(c
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x139;
+  frame->id = 0x75;
   frame->dlc = 1;
   uint32_t mcu_temperature_0 = ((msg->m_mcu_temperature - -1) / 0.592156862745098) + 0.5f;
   if (mcu_temperature_0 > 0xFF) {
@@ -121,7 +121,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_statu
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xF9;
+  frame->id = 0x116;
   frame->dlc = 2;
   ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_levitation_boards_power_channel_status & (0xFF >> (8 - 2)));
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_guidance_boards_power_channel_status & (0xFF >> (8 - 2))) << 2;
@@ -136,7 +136,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_curre
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xD9;
+  frame->id = 0xF6;
   frame->dlc = 8;
   uint32_t raspberry_pi_power_channel_current_0 = ((msg->m_raspberry_pi_power_channel_current - 0) / 0.0196078431372549) + 0.5f;
   if (raspberry_pi_power_channel_current_0 > 0xFF) {
@@ -184,7 +184,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_power_consump
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x119;
+  frame->id = 0x55;
   frame->dlc = 2;
   uint32_t total_power_0 = ((msg->m_total_power - 0) / 0.00025940337224383917) + 0.5f;
   if (total_power_0 > 0xFFFF) {
@@ -197,7 +197,7 @@ static void canzero_serialize_canzero_message_heartbeat_can0(canzero_message_hea
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x1F4;
+  frame->id = 0x16F;
   frame->dlc = 2;
   ((volatile uint32_t*)data)[0] = msg->m_node_id;
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
@@ -208,7 +208,7 @@ static void canzero_serialize_canzero_message_heartbeat_can1(canzero_message_hea
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x1F3;
+  frame->id = 0x16E;
   frame->dlc = 2;
   ((volatile uint32_t*)data)[0] = msg->m_node_id;
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_unregister & (0xFF >> (8 - 1))) << 8;
@@ -230,7 +230,7 @@ static void canzero_deserialize_canzero_message_set_req(canzero_frame* frame, ca
   msg->m_header.m_server_id = ((((uint32_t*)data)[0] >> 24) & (0xFFFFFFFF >> (32 - 8)));
   msg->m_data = (((uint32_t*)data)[1] & (0xFFFFFFFF >> (32 - 32)));
 }
-static void canzero_deserialize_canzero_message_mother_board_stream_pdu_12v_command(canzero_frame* frame, canzero_message_mother_board_stream_pdu_12v_command* msg) {
+static void canzero_deserialize_canzero_message_input_board_stream_pdu_12v_command(canzero_frame* frame, canzero_message_input_board_stream_pdu_12v_command* msg) {
   uint8_t* data = frame->data;
   msg->m_power_board12_command = (pdu_12v_command)(((uint32_t*)data)[0] & (0xFFFFFFFF >> (32 - 3)));
 }
@@ -416,7 +416,7 @@ static void schedule_get_resp_fragmentation_job(uint32_t *fragmentation_buffer, 
 }
 
 static job_t heartbeat_job;
-static const uint32_t heartbeat_interval = 169;
+static const uint32_t heartbeat_interval = 100 + 3 * CANZERO_NODE_ID;
 static void schedule_heartbeat_job() {
   heartbeat_job.climax = canzero_get_time();
   heartbeat_job.tag = HEARTBEAT_JOB_TAG;
@@ -578,7 +578,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_last_node_missed = __oe_last_node_missed;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_errors(&stream_message, &stream_frame);
-        canzero_can0_send(&stream_frame);
+        canzero_can1_send(&stream_frame);
         break;
       }
       case 3: {
@@ -606,7 +606,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_led_board_power_channel_status = __oe_led_board_power_channel_status;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_channel_status(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
       case 5: {
@@ -624,7 +624,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_fans_power_channel_current = __oe_fans_power_channel_current;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_channel_currents(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
       case 6: {
@@ -635,7 +635,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_total_power = __oe_total_power;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_power_consumption(&stream_message, &stream_frame);
-        canzero_can1_send(&stream_frame);
+        canzero_can0_send(&stream_frame);
         break;
       }
         default:
@@ -1366,9 +1366,9 @@ static PROGMEM void canzero_handle_set_req(canzero_frame* frame) {
   canzero_can1_send(&resp_frame);
 
 }
-static void canzero_handle_mother_board_stream_pdu_12v_command(canzero_frame* frame) {
-  canzero_message_mother_board_stream_pdu_12v_command msg;
-  canzero_deserialize_canzero_message_mother_board_stream_pdu_12v_command(frame, &msg);
+static void canzero_handle_input_board_stream_pdu_12v_command(canzero_frame* frame) {
+  canzero_message_input_board_stream_pdu_12v_command msg;
+  canzero_deserialize_canzero_message_input_board_stream_pdu_12v_command(frame, &msg);
   canzero_set_command(msg.m_power_board12_command);
 }
  void canzero_handle_heartbeat_can0(canzero_frame* frame) {
@@ -1437,13 +1437,13 @@ void canzero_can0_poll() {
   canzero_frame frame;
   while (canzero_can0_recv(&frame)) {
     switch (frame.id) {
-      case 0x1BE:
+      case 0x13E:
         canzero_handle_get_req(&frame);
         break;
-      case 0x4B:
-        canzero_handle_mother_board_stream_pdu_12v_command(&frame);
+      case 0x49:
+        canzero_handle_input_board_stream_pdu_12v_command(&frame);
         break;
-      case 0x1F4:
+      case 0x16F:
         canzero_handle_heartbeat_can0(&frame);
         break;
     }
@@ -1453,10 +1453,10 @@ void canzero_can1_poll() {
   canzero_frame frame;
   while (canzero_can1_recv(&frame)) {
     switch (frame.id) {
-      case 0x1DE:
+      case 0x15E:
         canzero_handle_set_req(&frame);
         break;
-      case 0x1F3:
+      case 0x16E:
         canzero_handle_heartbeat_can1(&frame);
         break;
     }
@@ -1517,7 +1517,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 1421184262919515853ull;
+  __oe_config_hash = 17447652292001080879ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
