@@ -17,8 +17,10 @@ void fsm::begin() {
 
 void fsm::update() {
   pdu_12v_command cmd = error_handling::approve(canzero_get_command());
+
   pdu_12v_state state = canzero_get_state();
   pdu_12v_state next_state = state;
+
   switch (cmd) {
   case pdu_12v_command_NONE:
     break;

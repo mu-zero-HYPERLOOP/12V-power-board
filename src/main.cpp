@@ -22,6 +22,7 @@ static ErrorLevelRangeCheck<EXPECT_UNDER>
                    canzero_set_error_level_mcu_temperature);
 
 int main() {
+
   canzero_init();
 
   can_defaults();
@@ -30,6 +31,7 @@ int main() {
   pdu12::begin();
   sdc::begin();
   fsm::begin();
+
 
   while (true) {
 

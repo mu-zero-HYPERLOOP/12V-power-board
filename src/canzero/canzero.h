@@ -283,7 +283,7 @@ static const uint32_t canzero_message_power_board12_stream_errors_id = 0x70;
 typedef struct {
   float m_mcu_temperature;
 } canzero_message_power_board12_stream_temperature;
-static const uint32_t canzero_message_power_board12_stream_temperature_id = 0x75;
+static const uint32_t canzero_message_power_board12_stream_temperature_id = 0xD5;
 typedef struct {
   pdu_channel_status m_levitation_boards_power_channel_status;
   pdu_channel_status m_guidance_boards_power_channel_status;
@@ -293,7 +293,7 @@ typedef struct {
   pdu_channel_status m_antenna_power_channel_status;
   pdu_channel_status m_led_board_power_channel_status;
 } canzero_message_power_board12_stream_channel_status;
-static const uint32_t canzero_message_power_board12_stream_channel_status_id = 0x116;
+static const uint32_t canzero_message_power_board12_stream_channel_status_id = 0x95;
 typedef struct {
   float m_raspberry_pi_power_channel_current;
   float m_antenna_power_channel_current;
@@ -304,11 +304,11 @@ typedef struct {
   float m_input_board_power_channel_current;
   float m_fans_power_channel_current;
 } canzero_message_power_board12_stream_channel_currents;
-static const uint32_t canzero_message_power_board12_stream_channel_currents_id = 0xF6;
+static const uint32_t canzero_message_power_board12_stream_channel_currents_id = 0x75;
 typedef struct {
   float m_total_power;
 } canzero_message_power_board12_stream_power_consumption;
-static const uint32_t canzero_message_power_board12_stream_power_consumption_id = 0x55;
+static const uint32_t canzero_message_power_board12_stream_power_consumption_id = 0xB5;
 typedef struct {
   uint8_t m_node_id;
   uint8_t m_unregister;
@@ -333,7 +333,7 @@ static const uint32_t canzero_message_set_req_id = 0x15E;
 typedef struct {
   pdu_12v_command m_power_board12_command;
 } canzero_message_input_board_stream_pdu_12v_command;
-static const uint32_t canzero_message_input_board_stream_pdu_12v_command_id = 0x49;
+static const uint32_t canzero_message_input_board_stream_pdu_12v_command_id = 0x48;
 void canzero_can0_poll();
 void canzero_can1_poll();
 uint32_t canzero_update_continue(uint32_t delta_time);

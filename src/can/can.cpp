@@ -1,4 +1,5 @@
 #include "can.hpp"
+#include "print.h"
 #include "FlexCAN_T4.h"
 #include "canzero/canzero.h"
 #include "util/timestamp.h"

@@ -108,7 +108,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_temperature(c
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x75;
+  frame->id = 0xD5;
   frame->dlc = 1;
   uint32_t mcu_temperature_0 = ((msg->m_mcu_temperature - -1) / 0.592156862745098) + 0.5f;
   if (mcu_temperature_0 > 0xFF) {
@@ -121,7 +121,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_statu
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x116;
+  frame->id = 0x95;
   frame->dlc = 2;
   ((volatile uint32_t*)data)[0] = (uint8_t)(msg->m_levitation_boards_power_channel_status & (0xFF >> (8 - 2)));
   ((volatile uint32_t*)data)[0] |= (uint8_t)(msg->m_guidance_boards_power_channel_status & (0xFF >> (8 - 2))) << 2;
@@ -136,7 +136,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_channel_curre
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0xF6;
+  frame->id = 0x75;
   frame->dlc = 8;
   uint32_t raspberry_pi_power_channel_current_0 = ((msg->m_raspberry_pi_power_channel_current - 0) / 0.0196078431372549) + 0.5f;
   if (raspberry_pi_power_channel_current_0 > 0xFF) {
@@ -184,7 +184,7 @@ static void canzero_serialize_canzero_message_power_board12_stream_power_consump
   for(uint8_t i = 0; i < 8; ++i){
     data[i] = 0;
   }
-  frame->id = 0x55;
+  frame->id = 0xB5;
   frame->dlc = 2;
   uint32_t total_power_0 = ((msg->m_total_power - 0) / 0.00025940337224383917) + 0.5f;
   if (total_power_0 > 0xFFFF) {
@@ -589,7 +589,7 @@ static void schedule_jobs(uint32_t time) {
         stream_message.m_mcu_temperature = __oe_mcu_temperature;
         canzero_frame stream_frame;
         canzero_serialize_canzero_message_power_board12_stream_temperature(&stream_message, &stream_frame);
-        canzero_can0_send(&stream_frame);
+        canzero_can1_send(&stream_frame);
         break;
       }
       case 4: {
@@ -1440,9 +1440,6 @@ void canzero_can0_poll() {
       case 0x13E:
         canzero_handle_get_req(&frame);
         break;
-      case 0x49:
-        canzero_handle_input_board_stream_pdu_12v_command(&frame);
-        break;
       case 0x16F:
         canzero_handle_heartbeat_can0(&frame);
         break;
@@ -1455,6 +1452,9 @@ void canzero_can1_poll() {
     switch (frame.id) {
       case 0x15E:
         canzero_handle_set_req(&frame);
+        break;
+      case 0x48:
+        canzero_handle_input_board_stream_pdu_12v_command(&frame);
         break;
       case 0x16E:
         canzero_handle_heartbeat_can1(&frame);
@@ -1517,7 +1517,7 @@ uint32_t canzero_update_continue(uint32_t time){
 #define BUILD_MIN   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_MIN)
 #define BUILD_SEC   ((BUILD_TIME_IS_BAD) ? 99 :  COMPUTE_BUILD_SEC)
 void canzero_init() {
-  __oe_config_hash = 17447652292001080879ull;
+  __oe_config_hash = 2631865858926008518ull;
   __oe_build_time = {
     .m_year = BUILD_YEAR,
     .m_month = BUILD_MONTH,
