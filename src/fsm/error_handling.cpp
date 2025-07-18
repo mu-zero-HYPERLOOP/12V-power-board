@@ -7,7 +7,7 @@ pdu_12v_command fsm::error_handling::approve(pdu_12v_command cmd) {
     return pdu_12v_command_STOP;
   }
 
-  if (canzero_get_error_any_short()) {
+  if (pdu12::any_short()) {
     return pdu_12v_command_STOP;
   }
 
