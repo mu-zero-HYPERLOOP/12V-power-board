@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <array>
 #include <random>
+#include <thread>
+#include <chrono>
 
 std::array<Current, CHANNEL_COUNT> pdu12::m_currents;
 std::array<bool, CHANNEL_COUNT> pdu12::m_shorts;
@@ -26,7 +28,10 @@ void pdu12::begin() {
   }
 }
 
-void pdu12::update() { }
+void pdu12::update() {
+  std::this_thread::sleep_for(
+      std::chrono::duration<uint32_t, std::micro>(1));
+}
 
 Current pdu12::sense(Pdu12Channel channel) {
   if (m_ctrl[channel]) {

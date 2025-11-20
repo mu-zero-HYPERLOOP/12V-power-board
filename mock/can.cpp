@@ -1,5 +1,6 @@
 #include "tcpcan.h"
 #include <cassert>
+#include "print.h"
 #include <chrono>
 #include <condition_variable>
 #include <cstring>
