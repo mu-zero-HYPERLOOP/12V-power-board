@@ -40,6 +40,11 @@ static BoxcarFilter<Current, DEFAULT_FILTER_LENGTH>
 static Interval power_sense_interval(DEFAULT_SENSE_FREQUENCY);
 static BoxcarFilter<Power, DEFAULT_FILTER_LENGTH> total_power_filter(0_W);
 
+static Interval emergency_brakes_sense_interval(DEFAULT_SENSE_FREQUENCY);
+static BoxcarFilter<Current, DEFAULT_FILTER_LENGTH>
+    emergency_brakes_current_filter(0_A);
+
+
 static inline pdu_channel_status pdu12_status_to_canzero_status(Pdu12ChannelStatus ch) {
   switch (ch) {
   case ON:
@@ -144,7 +149,6 @@ void channel_control(pdu_12v_state state) {
   }
   canzero_set_antenna_power_channel_status(
       pdu12_status_to_canzero_status(pdu12::status(ANTENNA_POWER_CHANNEL)));
-
   // ======= LED BOARD POWER CHANNEL ===========
   if (led_board_sense_interval.next()) {
     led_board_current_filter.push(pdu12::sense(LED_BOARD_CHANNEL));

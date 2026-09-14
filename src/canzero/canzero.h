@@ -408,7 +408,15 @@ static inline void canzero_set_antenna_power_channel_current(float value){
 }
 
 void canzero_set_antenna_power_channel_status(pdu_channel_status value);
+// ------ DOWN HERE -------------- !!!!!!!
+static inline void canzero_set_emergency_brakes_power_channel_current(float value){
+  extern float __oe_emergency_brakes_power_channel_current;
+  __oe_emergency_brakes_power_channel_current = value;
+}
 
+void canzero_set_emergency_brakes_power_channel_current(pdu_channel_status value);
+
+// ------
 static inline void canzero_set_led_board_power_channel_current(float value){
   extern float __oe_led_board_power_channel_current;
   __oe_led_board_power_channel_current = value;

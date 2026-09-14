@@ -23,5 +23,5 @@ constexpr Pdu12Channel ANTENNA_POWER_CHANNEL = lp_8_17;
 //grey
 constexpr Pdu12Channel FANS_POWER_CHANNEL = lp_9_16;
 
-// wtf
+// wt
 constexpr Pdu12Channel LED_BOARD_CHANNEL = lp_10_15;
